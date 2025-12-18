@@ -7,11 +7,8 @@ import {
   X,
   Play,
   Film,
-  Home,
   Tv,
   Clapperboard,
-  Sparkles,
-  Gamepad2,
   User,
   Settings,
   LogOut,
@@ -67,11 +64,8 @@ import {
 } from '@/components/ui/navigation-menu';
 
 const navLinks = [
-  { name: 'nav.home', path: '/', icon: Home },
   { name: 'nav.series', path: '/danh-sach/phim-bo', icon: Tv },
   { name: 'nav.movies', path: '/danh-sach/phim-le', icon: Clapperboard },
-  { name: 'nav.animation', path: '/danh-sach/hoat-hinh', icon: Sparkles },
-  { name: 'nav.tvShows', path: '/danh-sach/tv-shows', icon: Gamepad2 },
 ];
 
 const genres = [
@@ -178,33 +172,6 @@ export const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.slice(0, 1).map((link) => {
-              const isActive = location.pathname === link.path;
-              return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={`relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
-                    isActive
-                      ? 'text-primary'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <span className="relative z-10 flex items-center gap-2">
-                    <link.icon className="h-4 w-4" />
-                    {t(link.name)}
-                  </span>
-                  {isActive && (
-                    <motion.div
-                      layoutId="nav-indicator"
-                      className="absolute inset-0 bg-primary/10 rounded-lg"
-                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
-
             {/* Genres Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -255,8 +222,8 @@ export const Header = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Other nav links */}
-            {navLinks.slice(1).map((link) => {
+            {/* Nav links */}
+            {navLinks.map((link) => {
               const isActive = location.pathname === link.path;
               return (
                 <Link
@@ -506,19 +473,6 @@ export const Header = () => {
               className="lg:hidden glass mt-3 mx-4 rounded-xl p-4 shadow-xl max-h-[80vh] overflow-y-auto"
             >
               <div className="flex flex-col gap-1">
-                {/* Home */}
-                <Link
-                  to="/"
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
-                    location.pathname === '/'
-                      ? 'text-primary bg-primary/10'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                  }`}
-                >
-                  <Home className="h-5 w-5" />
-                  {t('nav.home')}
-                </Link>
-
                 {/* Genres Accordion */}
                 <div>
                   <button

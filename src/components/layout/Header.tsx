@@ -452,10 +452,10 @@ export const Header = () => {
         <AnimatePresence>
           {showSearch && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="container mt-4 overflow-hidden"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="container mt-4"
             >
               <InstantSearch onClose={() => setShowSearch(false)} />
             </motion.div>

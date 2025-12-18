@@ -15,6 +15,7 @@ import MovieList from "./pages/MovieList";
 import MovieDetail from "./pages/MovieDetail";
 import Watch from "./pages/Watch";
 import WatchTogether from "./pages/WatchTogether";
+import WatchTogetherLobby from "./pages/WatchTogetherLobby";
 import Search from "./pages/Search";
 import CategoryPage from "./pages/CategoryPage";
 import Auth from "./pages/Auth";
@@ -59,6 +60,7 @@ const App = () => {
                 <Route path="/danh-sach/:type" element={<MovieList />} />
                 <Route path="/phim/:slug" element={<MovieDetail />} />
                 <Route path="/xem-phim/:slug" element={<Watch />} />
+                <Route path="/xem-chung" element={<WatchTogetherLobby />} />
                 <Route path="/xem-chung/:roomCode" element={<WatchTogether />} />
                 <Route path="/tim-kiem" element={<Search />} />
                 <Route path="/the-loai/:slug" element={<CategoryPage type="category" />} />

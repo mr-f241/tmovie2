@@ -45,14 +45,35 @@ export const MovieComments = ({ movieSlug, episodeSlug }: MovieCommentsProps) =>
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ['comments', commentKey],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First fetch comments
+      const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
         .select('*')
         .eq('movie_slug', commentKey)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data as Comment[];
+      if (commentsError) throw commentsError;
+      if (!commentsData || commentsData.length === 0) return [];
+
+      // Get unique user IDs
+      const userIds = [...new Set(commentsData.map(c => c.user_id))];
+      
+      // Fetch profiles for those users
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, username, avatar_url')
+        .in('user_id', userIds);
+
+      // Create a map of user_id to profile
+      const profilesMap = new Map(
+        (profilesData || []).map(p => [p.user_id, p])
+      );
+
+      // Attach profiles to comments
+      return commentsData.map(comment => ({
+        ...comment,
+        profile: profilesMap.get(comment.user_id) || null
+      })) as Comment[];
     },
   });
 

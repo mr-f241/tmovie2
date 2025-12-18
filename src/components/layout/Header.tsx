@@ -1,19 +1,61 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Menu, X, Play, Film, Home, Tv, Clapperboard, Sparkles, Gamepad2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import {
+  Search,
+  Menu,
+  X,
+  Play,
+  Film,
+  Home,
+  Tv,
+  Clapperboard,
+  Sparkles,
+  Gamepad2,
+  User,
+  Settings,
+  LogOut,
+  Heart,
+  History,
+  Bell,
+  Sun,
+  Moon,
+  Globe,
+  ChevronDown,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InstantSearch } from '@/components/search/InstantSearch';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 const navLinks = [
-  { name: 'Trang chủ', path: '/', icon: Home },
-  { name: 'Phim Bộ', path: '/danh-sach/phim-bo', icon: Tv },
-  { name: 'Phim Lẻ', path: '/danh-sach/phim-le', icon: Clapperboard },
-  { name: 'Hoạt Hình', path: '/danh-sach/hoat-hinh', icon: Sparkles },
-  { name: 'TV Shows', path: '/danh-sach/tv-shows', icon: Gamepad2 },
+  { name: 'nav.home', path: '/', icon: Home },
+  { name: 'nav.series', path: '/danh-sach/phim-bo', icon: Tv },
+  { name: 'nav.movies', path: '/danh-sach/phim-le', icon: Clapperboard },
+  { name: 'nav.animation', path: '/danh-sach/hoat-hinh', icon: Sparkles },
+  { name: 'nav.tvShows', path: '/danh-sach/tv-shows', icon: Gamepad2 },
+];
+
+const languages = [
+  { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
+  { code: 'en', name: 'English', flag: '🇺🇸' },
 ];
 
 export const Header = () => {
+  const { t, i18n } = useTranslation();
+  const { user, profile, signOut } = useAuth();
+  const { resolvedTheme, setTheme } = useTheme();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -31,7 +73,6 @@ export const Header = () => {
     setShowSearch(false);
   }, [location.pathname]);
 
-  // Close search on escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -43,19 +84,30 @@ export const Header = () => {
     return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const changeLanguage = (code: string) => {
+    i18n.changeLanguage(code);
+  };
+
+  const currentLanguage = languages.find((l) => l.code === i18n.language) || languages[0];
+
   return (
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled 
-            ? 'glass py-3 shadow-lg' 
+          isScrolled
+            ? 'glass py-3 shadow-lg'
             : 'bg-gradient-to-b from-background/90 via-background/50 to-transparent py-4'
         }`}
       >
         <div className="container flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            <motion.div 
+            <motion.div
               className="relative"
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
@@ -84,7 +136,7 @@ export const Header = () => {
                 >
                   <span className="relative z-10 flex items-center gap-2">
                     <link.icon className="h-4 w-4" />
-                    {link.name}
+                    {t(link.name)}
                   </span>
                   {isActive && (
                     <motion.div
@@ -98,7 +150,7 @@ export const Header = () => {
             })}
           </nav>
 
-          {/* Search & Mobile Menu */}
+          {/* Right Actions */}
           <div className="flex items-center gap-2">
             {/* Search Toggle */}
             <motion.div whileTap={{ scale: 0.95 }}>
@@ -113,6 +165,138 @@ export const Header = () => {
                 <Search className="h-5 w-5" />
               </Button>
             </motion.div>
+
+            {/* Language Switcher */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="hidden sm:flex">
+                  <Globe className="h-5 w-5 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                {languages.map((lang) => (
+                  <DropdownMenuItem
+                    key={lang.code}
+                    onClick={() => changeLanguage(lang.code)}
+                    className={i18n.language === lang.code ? 'bg-secondary' : ''}
+                  >
+                    <span className="mr-2">{lang.flag}</span>
+                    {lang.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              className="hidden sm:flex text-muted-foreground hover:text-foreground"
+            >
+              {resolvedTheme === 'dark' ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+            </Button>
+
+            {/* Notifications */}
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative hidden sm:flex text-muted-foreground hover:text-foreground"
+                  >
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-80">
+                  <DropdownMenuLabel>Thông báo</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <div className="p-4 text-center text-sm text-muted-foreground">
+                    Không có thông báo mới
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {/* User Menu / Auth */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="hidden sm:flex items-center gap-2 px-2"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={profile?.avatar_url || ''} />
+                      <AvatarFallback className="bg-primary/20 text-primary text-sm">
+                        {profile?.display_name?.[0] || user.email?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">
+                        {profile?.display_name || 'User'}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/ho-so" className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Hồ sơ
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/danh-sach-cua-toi" className="flex items-center gap-2">
+                      <Heart className="h-4 w-4" />
+                      Danh sách yêu thích
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/lich-su" className="flex items-center gap-2">
+                      <History className="h-4 w-4" />
+                      Lịch sử xem
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/cai-dat" className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Cài đặt
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Đăng xuất
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                asChild
+                variant="secondary"
+                size="sm"
+                className="hidden sm:flex"
+              >
+                <Link to="/dang-nhap">Đăng nhập</Link>
+              </Button>
+            )}
 
             {/* Mobile Menu Toggle */}
             <motion.div whileTap={{ scale: 0.95 }} className="lg:hidden">
@@ -191,11 +375,95 @@ export const Header = () => {
                         }`}
                       >
                         <link.icon className="h-5 w-5" />
-                        {link.name}
+                        {t(link.name)}
                       </Link>
                     </motion.div>
                   );
                 })}
+
+                {/* Mobile User Actions */}
+                <div className="border-t border-border mt-2 pt-2">
+                  {user ? (
+                    <>
+                      <Link
+                        to="/ho-so"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"
+                      >
+                        <User className="h-5 w-5" />
+                        Hồ sơ
+                      </Link>
+                      <Link
+                        to="/danh-sach-cua-toi"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"
+                      >
+                        <Heart className="h-5 w-5" />
+                        Danh sách yêu thích
+                      </Link>
+                      <Link
+                        to="/lich-su"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"
+                      >
+                        <History className="h-5 w-5" />
+                        Lịch sử xem
+                      </Link>
+                      <Link
+                        to="/cai-dat"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"
+                      >
+                        <Settings className="h-5 w-5" />
+                        Cài đặt
+                      </Link>
+                      <button
+                        onClick={handleSignOut}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 w-full"
+                      >
+                        <LogOut className="h-5 w-5" />
+                        Đăng xuất
+                      </button>
+                    </>
+                  ) : (
+                    <Link
+                      to="/dang-nhap"
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-primary bg-primary/10"
+                    >
+                      <User className="h-5 w-5" />
+                      Đăng nhập
+                    </Link>
+                  )}
+
+                  {/* Theme & Language in Mobile */}
+                  <div className="flex items-center gap-2 px-4 py-3">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+                      className="flex-1"
+                    >
+                      {resolvedTheme === 'dark' ? (
+                        <>
+                          <Sun className="h-4 w-4 mr-2" />
+                          Sáng
+                        </>
+                      ) : (
+                        <>
+                          <Moon className="h-4 w-4 mr-2" />
+                          Tối
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() =>
+                        changeLanguage(i18n.language === 'vi' ? 'en' : 'vi')
+                      }
+                      className="flex-1"
+                    >
+                      <Globe className="h-4 w-4 mr-2" />
+                      {currentLanguage.flag} {currentLanguage.name}
+                    </Button>
+                  </div>
+                </div>
               </div>
             </motion.nav>
           )}

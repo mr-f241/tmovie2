@@ -54,7 +54,11 @@ serve(async (req) => {
 
     console.log(`Searching YouTube for: ${searchQuery}`);
 
-    const response = await fetch(youtubeUrl);
+    const response = await fetch(youtubeUrl, {
+      headers: {
+        'Referer': 'https://lovable.dev',
+      }
+    });
     
     if (!response.ok) {
       const errorText = await response.text();

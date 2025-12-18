@@ -5,6 +5,7 @@ import { Search as SearchIcon } from 'lucide-react';
 import { searchMovies } from '@/services/api';
 import { Layout } from '@/components/layout/Layout';
 import { MovieGrid } from '@/components/movie/MovieGrid';
+import { SearchSuggestions } from '@/components/search/SearchSuggestions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -14,6 +15,7 @@ const Search = () => {
   const keyword = searchParams.get('keyword') || '';
   const page = Number(searchParams.get('page')) || 1;
   const [inputValue, setInputValue] = useState(keyword);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['search', keyword, page],
@@ -29,6 +31,7 @@ const Search = () => {
     e.preventDefault();
     if (inputValue.trim()) {
       setSearchParams({ keyword: inputValue.trim(), page: '1' });
+      setShowSuggestions(false);
     }
   };
 
@@ -52,7 +55,11 @@ const Search = () => {
               type="text"
               placeholder="Nhập tên phim cần tìm..."
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => {
+                setInputValue(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => setShowSuggestions(true)}
               className="w-full h-14 text-lg bg-secondary/50 border-border/50 pr-14 rounded-xl"
             />
             <Button
@@ -63,6 +70,13 @@ const Search = () => {
               <SearchIcon className="h-5 w-5" />
             </Button>
           </form>
+
+          {/* Suggestions dropdown */}
+          {showSuggestions && !keyword && (
+            <div className="mt-4 glass-card rounded-xl p-4">
+              <SearchSuggestions onSelect={() => setShowSuggestions(false)} />
+            </div>
+          )}
         </div>
 
         {/* Results */}
@@ -111,7 +125,7 @@ const Search = () => {
         )}
 
         {/* Empty State */}
-        {!keyword && (
+        {!keyword && !showSuggestions && (
           <div className="text-center py-12">
             <SearchIcon className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
             <p className="text-muted-foreground">

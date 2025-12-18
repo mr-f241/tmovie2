@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { User, Camera, Save } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 import { Layout } from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/hooks/useAuthModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,8 +14,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Profile: React.FC = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { user, profile, updateProfile, isLoading } = useAuth();
+  const { openLogin } = useAuthModal();
 
   const [formData, setFormData] = useState({
     display_name: profile?.display_name || '',
@@ -25,12 +25,24 @@ const Profile: React.FC = () => {
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  // Redirect if not logged in
-  React.useEffect(() => {
+  // Open auth modal if not logged in
+  useEffect(() => {
     if (!isLoading && !user) {
-      navigate('/auth');
+      openLogin();
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, openLogin]);
+
+  // Update form when profile loads
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        display_name: profile.display_name || '',
+        username: profile.username || '',
+        bio: profile.bio || '',
+        avatar_url: profile.avatar_url || '',
+      });
+    }
+  }, [profile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -55,7 +67,16 @@ const Profile: React.FC = () => {
   }
 
   if (!user) {
-    return null;
+    return (
+      <Layout>
+        <div className="container py-8 flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">Vui lòng đăng nhập để xem hồ sơ</p>
+          </div>
+        </div>
+      </Layout>
+    );
   }
 
   return (

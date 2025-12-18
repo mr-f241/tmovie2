@@ -436,6 +436,130 @@ export type Database = {
         }
         Relationships: []
       }
+      watch_room_messages: {
+        Row: {
+          avatar_url: string | null
+          content: string
+          created_at: string
+          display_name: string
+          id: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          content: string
+          created_at?: string
+          display_name: string
+          id?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          content?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_room_messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "watch_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      watch_room_participants: {
+        Row: {
+          avatar_url: string | null
+          display_name: string
+          id: string
+          is_host: boolean | null
+          joined_at: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          display_name: string
+          id?: string
+          is_host?: boolean | null
+          joined_at?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          display_name?: string
+          id?: string
+          is_host?: boolean | null
+          joined_at?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_room_participants_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "watch_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      watch_rooms: {
+        Row: {
+          created_at: string
+          episode_name: string | null
+          episode_slug: string | null
+          expires_at: string | null
+          host_id: string
+          id: string
+          is_playing: boolean | null
+          movie_name: string
+          movie_slug: string
+          playback_time: number | null
+          poster_url: string | null
+          room_code: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          episode_name?: string | null
+          episode_slug?: string | null
+          expires_at?: string | null
+          host_id: string
+          id?: string
+          is_playing?: boolean | null
+          movie_name: string
+          movie_slug: string
+          playback_time?: number | null
+          poster_url?: string | null
+          room_code: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          episode_name?: string | null
+          episode_slug?: string | null
+          expires_at?: string | null
+          host_id?: string
+          id?: string
+          is_playing?: boolean | null
+          movie_name?: string
+          movie_slug?: string
+          playback_time?: number | null
+          poster_url?: string | null
+          room_code?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

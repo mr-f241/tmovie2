@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
+import { useAuthModal } from '@/hooks/useAuthModal';
 
 const Settings: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -265,7 +266,10 @@ const Settings: React.FC = () => {
                 <p className="text-muted-foreground mb-4">
                   Đăng nhập để lưu cài đặt và đồng bộ trên mọi thiết bị
                 </p>
-                <Button onClick={() => navigate('/auth')}>
+                <Button onClick={() => {
+                  const { openLogin } = useAuthModal.getState();
+                  openLogin();
+                }}>
                   {t('nav.login')}
                 </Button>
               </section>

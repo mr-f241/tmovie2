@@ -7,6 +7,7 @@ import { MovieCarousel } from '@/components/movie/MovieCarousel';
 import { GenreHighlights } from '@/components/movie/GenreHighlights';
 import { FeaturedBanner } from '@/components/movie/FeaturedBanner';
 import { PersonalizedSections } from '@/components/movie/PersonalizedSections';
+import { QuickFilters } from '@/components/movie/QuickFilters';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
@@ -49,6 +50,9 @@ const Index = () => {
 
       {/* Discovery Section - "What do you want to watch?" */}
       <DiscoverySection />
+
+      {/* Quick Filters */}
+      <QuickFilters />
 
       {/* Personalized Sections for logged-in users */}
       {user && <PersonalizedSections />}

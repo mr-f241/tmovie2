@@ -17,8 +17,27 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const keyword = url.searchParams.get('keyword');
-    const maxResults = url.searchParams.get('maxResults') || '5';
+
+    // Support both GET (query params) and POST (JSON body)
+    let keyword: string | null = null;
+    let maxResultsInput: string | null = null;
+
+    if (req.method === 'POST') {
+      const contentType = req.headers.get('content-type') ?? '';
+      if (contentType.includes('application/json')) {
+        const body = await req.json().catch(() => ({}));
+        keyword = typeof body?.keyword === 'string' ? body.keyword : null;
+        if (body?.maxResults !== undefined && body?.maxResults !== null) {
+          maxResultsInput = String(body.maxResults);
+        }
+      }
+    }
+
+    keyword = (keyword ?? url.searchParams.get('keyword'))?.trim() ?? null;
+    maxResultsInput = maxResultsInput ?? url.searchParams.get('maxResults');
+
+    const parsedMax = Number.parseInt((maxResultsInput ?? '5').trim(), 10);
+    const maxResults = Number.isFinite(parsedMax) ? Math.min(50, Math.max(1, parsedMax)) : 5;
 
     if (!keyword) {
       return new Response(
@@ -29,7 +48,7 @@ serve(async (req) => {
 
     const cacheKey = `${keyword}_${maxResults}`;
     const cached = cache.get(cacheKey);
-    
+
     // Return cached result if valid
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       console.log(`Cache hit for: ${keyword}`);

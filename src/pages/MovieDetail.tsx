@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import DOMPurify from 'dompurify';
 import {
   Play,
   Calendar,
@@ -535,7 +536,12 @@ const MovieDetail = () => {
                       <h3 className="font-semibold mb-3">Nội dung phim</h3>
                       <div
                         className="text-muted-foreground leading-relaxed prose prose-invert prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{ __html: movie.content }}
+                        dangerouslySetInnerHTML={{ 
+                          __html: DOMPurify.sanitize(movie.content, {
+                            ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'u', 'span', 'div'],
+                            ALLOWED_ATTR: ['class']
+                          })
+                        }}
                       />
                     </div>
                   )}

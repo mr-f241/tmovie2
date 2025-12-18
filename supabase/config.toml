@@ -1,1 +1,10 @@
 project_id = "kuuldnxlqlwmoincloqh"
+
+[functions.session-init]
+verify_jwt = false
+
+[functions.api-proxy]
+verify_jwt = false
+
+[functions.refresh-tokens]
+verify_jwt = false

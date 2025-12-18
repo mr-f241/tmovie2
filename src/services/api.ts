@@ -1,7 +1,5 @@
+import { securityClient } from '@/lib/security';
 import type { Movie, MovieDetail, Category, Country, MovieListResponse } from '@/types/movie';
-
-const BASE_URL = 'https://phimapi.com';
-const OPHIM_URL = 'https://ophim1.com';
 
 // Helper to convert image URLs
 export const getImageUrl = (url: string): string => {
@@ -10,154 +8,162 @@ export const getImageUrl = (url: string): string => {
   return `https://phimimg.com/${url}`;
 };
 
-// Fetch new/updated movies
+// Fetch new/updated movies via secure proxy
 export const fetchNewMovies = async (page = 1): Promise<MovieListResponse> => {
-  const res = await fetch(`${BASE_URL}/danh-sach/phim-moi-cap-nhat?page=${page}`);
-  if (!res.ok) throw new Error('Failed to fetch new movies');
-  const data = await res.json();
-  return {
-    items: data.items || [],
-    pagination: data.pagination || {
-      totalItems: 0,
-      totalItemsPerPage: 24,
-      currentPage: page,
-      totalPages: 1,
-    },
-  };
+  try {
+    const data = await securityClient.request<any>('movies', { page });
+    return {
+      items: data.items || [],
+      pagination: data.pagination || {
+        totalItems: 0,
+        totalItemsPerPage: 24,
+        currentPage: page,
+        totalPages: 1,
+      },
+    };
+  } catch (error) {
+    console.error('Failed to fetch new movies:', error);
+    return { items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: page, totalPages: 1 } };
+  }
 };
 
-// Fetch movies by type (phim-bo, phim-le, hoat-hinh, tv-shows)
-export const fetchMoviesByType = async (
-  type: string,
-  page = 1
-): Promise<MovieListResponse> => {
-  const res = await fetch(`${BASE_URL}/v1/api/danh-sach/${type}?page=${page}`);
-  if (!res.ok) throw new Error('Failed to fetch movies by type');
-  const data = await res.json();
-  return {
-    items: data.data?.items || [],
-    pagination: data.data?.params?.pagination || {
-      totalItems: 0,
-      totalItemsPerPage: 24,
-      currentPage: page,
-      totalPages: 1,
-    },
-  };
+// Fetch movies by type via secure proxy
+export const fetchMoviesByType = async (type: string, page = 1): Promise<MovieListResponse> => {
+  try {
+    const data = await securityClient.request<any>('moviesByType', { type, page });
+    return {
+      items: data.data?.items || [],
+      pagination: data.data?.params?.pagination || {
+        totalItems: 0,
+        totalItemsPerPage: 24,
+        currentPage: page,
+        totalPages: 1,
+      },
+    };
+  } catch (error) {
+    console.error('Failed to fetch movies by type:', error);
+    return { items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: page, totalPages: 1 } };
+  }
 };
 
-// Fetch movie detail
+// Fetch movie detail via secure proxy
 export const fetchMovieDetail = async (slug: string): Promise<MovieDetail | null> => {
-  const res = await fetch(`${BASE_URL}/phim/${slug}`);
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.movie ? { ...data.movie, episodes: data.episodes || [] } : null;
+  try {
+    const data = await securityClient.request<any>('detail', { slug });
+    return data.movie ? { ...data.movie, episodes: data.episodes || [] } : null;
+  } catch (error) {
+    console.error('Failed to fetch movie detail:', error);
+    return null;
+  }
 };
 
-// Fetch categories
+// Fetch categories via secure proxy
 export const fetchCategories = async (): Promise<Category[]> => {
-  const res = await fetch(`${BASE_URL}/the-loai`);
-  if (!res.ok) throw new Error('Failed to fetch categories');
-  const data = await res.json();
-  return data || [];
+  try {
+    const data = await securityClient.request<Category[]>('categories', {});
+    return data || [];
+  } catch (error) {
+    console.error('Failed to fetch categories:', error);
+    return [];
+  }
 };
 
-// Fetch countries
+// Fetch countries via secure proxy
 export const fetchCountries = async (): Promise<Country[]> => {
-  const res = await fetch(`${BASE_URL}/quoc-gia`);
-  if (!res.ok) throw new Error('Failed to fetch countries');
-  const data = await res.json();
-  return data || [];
+  try {
+    const data = await securityClient.request<Country[]>('countries', {});
+    return data || [];
+  } catch (error) {
+    console.error('Failed to fetch countries:', error);
+    return [];
+  }
 };
 
-// Fetch movies by category
-export const fetchMoviesByCategory = async (
-  slug: string,
-  page = 1
-): Promise<MovieListResponse> => {
-  const res = await fetch(`${BASE_URL}/v1/api/the-loai/${slug}?page=${page}`);
-  if (!res.ok) throw new Error('Failed to fetch movies by category');
-  const data = await res.json();
-  return {
-    items: data.data?.items || [],
-    pagination: data.data?.params?.pagination || {
-      totalItems: 0,
-      totalItemsPerPage: 24,
-      currentPage: page,
-      totalPages: 1,
-    },
-  };
+// Fetch movies by category via secure proxy
+export const fetchMoviesByCategory = async (slug: string, page = 1): Promise<MovieListResponse> => {
+  try {
+    const data = await securityClient.request<any>('moviesByCategory', { slug, page });
+    return {
+      items: data.data?.items || [],
+      pagination: data.data?.params?.pagination || {
+        totalItems: 0,
+        totalItemsPerPage: 24,
+        currentPage: page,
+        totalPages: 1,
+      },
+    };
+  } catch (error) {
+    console.error('Failed to fetch movies by category:', error);
+    return { items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: page, totalPages: 1 } };
+  }
 };
 
-// Fetch movies by country
-export const fetchMoviesByCountry = async (
-  slug: string,
-  page = 1
-): Promise<MovieListResponse> => {
-  const res = await fetch(`${BASE_URL}/v1/api/quoc-gia/${slug}?page=${page}`);
-  if (!res.ok) throw new Error('Failed to fetch movies by country');
-  const data = await res.json();
-  return {
-    items: data.data?.items || [],
-    pagination: data.data?.params?.pagination || {
-      totalItems: 0,
-      totalItemsPerPage: 24,
-      currentPage: page,
-      totalPages: 1,
-    },
-  };
+// Fetch movies by country via secure proxy
+export const fetchMoviesByCountry = async (slug: string, page = 1): Promise<MovieListResponse> => {
+  try {
+    const data = await securityClient.request<any>('moviesByCountry', { slug, page });
+    return {
+      items: data.data?.items || [],
+      pagination: data.data?.params?.pagination || {
+        totalItems: 0,
+        totalItemsPerPage: 24,
+        currentPage: page,
+        totalPages: 1,
+      },
+    };
+  } catch (error) {
+    console.error('Failed to fetch movies by country:', error);
+    return { items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: page, totalPages: 1 } };
+  }
 };
 
-// Fetch movies by year
-export const fetchMoviesByYear = async (
-  year: string,
-  page = 1
-): Promise<MovieListResponse> => {
-  const res = await fetch(`${BASE_URL}/v1/api/nam/${year}?page=${page}`);
-  if (!res.ok) throw new Error('Failed to fetch movies by year');
-  const data = await res.json();
-  return {
-    items: data.data?.items || [],
-    pagination: data.data?.params?.pagination || {
-      totalItems: 0,
-      totalItemsPerPage: 24,
-      currentPage: page,
-      totalPages: 1,
-    },
-  };
+// Fetch movies by year via secure proxy
+export const fetchMoviesByYear = async (year: string, page = 1): Promise<MovieListResponse> => {
+  try {
+    const data = await securityClient.request<any>('moviesByYear', { year, page });
+    return {
+      items: data.data?.items || [],
+      pagination: data.data?.params?.pagination || {
+        totalItems: 0,
+        totalItemsPerPage: 24,
+        currentPage: page,
+        totalPages: 1,
+      },
+    };
+  } catch (error) {
+    console.error('Failed to fetch movies by year:', error);
+    return { items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: page, totalPages: 1 } };
+  }
 };
 
-// Search movies
-export const searchMovies = async (
-  keyword: string,
-  page = 1
-): Promise<MovieListResponse> => {
-  const res = await fetch(
-    `${BASE_URL}/v1/api/tim-kiem?keyword=${encodeURIComponent(keyword)}&page=${page}`
-  );
-  if (!res.ok) throw new Error('Failed to search movies');
-  const data = await res.json();
-  return {
-    items: data.data?.items || [],
-    pagination: data.data?.params?.pagination || {
-      totalItems: 0,
-      totalItemsPerPage: 24,
-      currentPage: page,
-      totalPages: 1,
-    },
-  };
+// Search movies via secure proxy
+export const searchMovies = async (keyword: string, page = 1): Promise<MovieListResponse> => {
+  try {
+    const data = await securityClient.request<any>('search', { keyword, page });
+    return {
+      items: data.data?.items || [],
+      pagination: data.data?.params?.pagination || {
+        totalItems: 0,
+        totalItemsPerPage: 24,
+        currentPage: page,
+        totalPages: 1,
+      },
+    };
+  } catch (error) {
+    console.error('Failed to search movies:', error);
+    return { items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: page, totalPages: 1 } };
+  }
 };
 
-// Get watch history from localStorage
+// Legacy localStorage functions (now using encrypted storage)
+import { secureStorage } from '@/lib/crypto';
+
 export const getWatchHistory = (): Record<string, { episode: string; time: number }> => {
-  if (typeof window === 'undefined') return {};
-  const history = localStorage.getItem('tmovie_watch_history');
-  return history ? JSON.parse(history) : {};
+  return secureStorage.get('watch_history_legacy', {});
 };
 
-// Save watch history to localStorage
 export const saveWatchHistory = (slug: string, episode: string, time: number): void => {
-  if (typeof window === 'undefined') return;
   const history = getWatchHistory();
   history[slug] = { episode, time };
-  localStorage.setItem('tmovie_watch_history', JSON.stringify(history));
+  secureStorage.set('watch_history_legacy', history);
 };

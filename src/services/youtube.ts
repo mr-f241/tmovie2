@@ -9,21 +9,61 @@ export interface YouTubeResult {
   publishedAt?: string;
 }
 
+export interface YouTubeSearchResponse {
+  items: YouTubeResult[];
+  nextPageToken: string | null;
+  prevPageToken: string | null;
+  totalResults: number;
+  resultsPerPage: number;
+}
+
 export const searchYouTube = async (
   keyword: string,
-  maxResults = 3
-): Promise<YouTubeResult[]> => {
+  maxResults = 24,
+  pageToken?: string
+): Promise<YouTubeSearchResponse> => {
   const clean = keyword.trim();
-  if (!clean) return [];
+  if (!clean) {
+    return {
+      items: [],
+      nextPageToken: null,
+      prevPageToken: null,
+      totalResults: 0,
+      resultsPerPage: maxResults,
+    };
+  }
 
-  const { data, error } = await supabase.functions.invoke<YouTubeResult[]>("youtube-search", {
-    body: { keyword: clean, maxResults },
+  const { data, error } = await supabase.functions.invoke<YouTubeSearchResponse>("youtube-search", {
+    body: { keyword: clean, maxResults, pageToken },
   });
 
   if (error) {
     console.error("YouTube search failed:", error);
-    return [];
+    return {
+      items: [],
+      nextPageToken: null,
+      prevPageToken: null,
+      totalResults: 0,
+      resultsPerPage: maxResults,
+    };
   }
 
-  return Array.isArray(data) ? data : [];
+  // Handle both old format (array) and new format (object with items)
+  if (Array.isArray(data)) {
+    return {
+      items: data,
+      nextPageToken: null,
+      prevPageToken: null,
+      totalResults: data.length,
+      resultsPerPage: maxResults,
+    };
+  }
+
+  return data ?? {
+    items: [],
+    nextPageToken: null,
+    prevPageToken: null,
+    totalResults: 0,
+    resultsPerPage: maxResults,
+  };
 };

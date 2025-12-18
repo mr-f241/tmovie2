@@ -21,6 +21,7 @@ serve(async (req) => {
     // Support both GET (query params) and POST (JSON body)
     let keyword: string | null = null;
     let maxResultsInput: string | null = null;
+    let pageToken: string | null = null;
 
     if (req.method === 'POST') {
       const contentType = req.headers.get('content-type') ?? '';
@@ -30,11 +31,15 @@ serve(async (req) => {
         if (body?.maxResults !== undefined && body?.maxResults !== null) {
           maxResultsInput = String(body.maxResults);
         }
+        if (typeof body?.pageToken === 'string') {
+          pageToken = body.pageToken;
+        }
       }
     }
 
     keyword = (keyword ?? url.searchParams.get('keyword'))?.trim() ?? null;
     maxResultsInput = maxResultsInput ?? url.searchParams.get('maxResults');
+    pageToken = pageToken ?? url.searchParams.get('pageToken');
 
     const parsedMax = Number.parseInt((maxResultsInput ?? '5').trim(), 10);
     const maxResults = Number.isFinite(parsedMax) ? Math.min(50, Math.max(1, parsedMax)) : 5;
@@ -46,12 +51,12 @@ serve(async (req) => {
       );
     }
 
-    const cacheKey = `${keyword}_${maxResults}`;
+    const cacheKey = `${keyword}_${maxResults}_${pageToken || 'first'}`;
     const cached = cache.get(cacheKey);
 
     // Return cached result if valid
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      console.log(`Cache hit for: ${keyword}`);
+      console.log(`Cache hit for: ${keyword} (page: ${pageToken || 'first'})`);
       return new Response(
         JSON.stringify(cached.data),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -69,9 +74,14 @@ serve(async (req) => {
 
     // Search for movie trailers/full movies
     const searchQuery = `${keyword} phim vietsub full`;
-    const youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(searchQuery)}&type=video&maxResults=${maxResults}&key=${apiKey}&relevanceLanguage=vi&videoDuration=long`;
+    let youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(searchQuery)}&type=video&maxResults=${maxResults}&key=${apiKey}&relevanceLanguage=vi&videoDuration=long`;
+    
+    // Add pageToken if provided
+    if (pageToken) {
+      youtubeUrl += `&pageToken=${encodeURIComponent(pageToken)}`;
+    }
 
-    console.log(`Searching YouTube for: ${searchQuery}`);
+    console.log(`Searching YouTube for: ${searchQuery} (page: ${pageToken || 'first'})`);
 
     const response = await fetch(youtubeUrl, {
       headers: {
@@ -90,7 +100,7 @@ serve(async (req) => {
 
     const data = await response.json();
     
-    const results = data.items?.map((item: any) => ({
+    const items = data.items?.map((item: any) => ({
       videoId: item.id?.videoId,
       title: item.snippet?.title,
       thumbnail: item.snippet?.thumbnails?.medium?.url || item.snippet?.thumbnails?.default?.url,
@@ -99,8 +109,16 @@ serve(async (req) => {
       description: item.snippet?.description?.substring(0, 150),
     })) || [];
 
+    const result = {
+      items,
+      nextPageToken: data.nextPageToken || null,
+      prevPageToken: data.prevPageToken || null,
+      totalResults: data.pageInfo?.totalResults || items.length,
+      resultsPerPage: data.pageInfo?.resultsPerPage || maxResults,
+    };
+
     // Cache the results
-    cache.set(cacheKey, { data: results, timestamp: Date.now() });
+    cache.set(cacheKey, { data: result, timestamp: Date.now() });
     
     // Clean old cache entries
     const now = Date.now();
@@ -110,10 +128,10 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Found ${results.length} YouTube results for: ${keyword}`);
+    console.log(`Found ${items.length} YouTube results for: ${keyword} (total: ${result.totalResults})`);
 
     return new Response(
-      JSON.stringify(results),
+      JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {

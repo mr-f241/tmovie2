@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.refresh-tokens]
 verify_jwt = false
+
+[functions.youtube-search]
+verify_jwt = false

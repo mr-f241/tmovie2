@@ -2,10 +2,16 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchNewMovies, fetchMoviesByType } from '@/services/api';
 import { Layout } from '@/components/layout/Layout';
 import { HeroSlider } from '@/components/movie/HeroSlider';
-import { MovieSection } from '@/components/movie/MovieSection';
-import { ContinueWatching } from '@/components/movie/ContinueWatching';
+import { DiscoverySection } from '@/components/movie/DiscoverySection';
+import { MovieCarousel } from '@/components/movie/MovieCarousel';
+import { GenreHighlights } from '@/components/movie/GenreHighlights';
+import { FeaturedBanner } from '@/components/movie/FeaturedBanner';
+import { PersonalizedSections } from '@/components/movie/PersonalizedSections';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
+  const { user } = useAuth();
+
   const { data: newMovies, isLoading: loadingNew } = useQuery({
     queryKey: ['newMovies'],
     queryFn: () => fetchNewMovies(1),
@@ -41,46 +47,58 @@ const Index = () => {
       {/* Hero Slider */}
       <HeroSlider movies={newMovies?.items || []} loading={loadingNew} />
 
-      {/* Continue Watching */}
-      <ContinueWatching />
+      {/* Discovery Section - "What do you want to watch?" */}
+      <DiscoverySection />
 
-      {/* Movie Sections */}
-      <div className="space-y-2">
-        <MovieSection
-          title="Phim Mới Cập Nhật"
-          movies={newMovies?.items || []}
-          loading={loadingNew}
-          viewAllLink="/danh-sach/phim-moi"
-        />
+      {/* Personalized Sections for logged-in users */}
+      {user && <PersonalizedSections />}
 
-        <MovieSection
-          title="Phim Bộ Mới"
-          movies={phimBo?.items || []}
-          loading={loadingPhimBo}
-          viewAllLink="/danh-sach/phim-bo"
-        />
+      {/* Featured Carousels */}
+      <MovieCarousel
+        title="Phim Mới Cập Nhật"
+        subtitle="Cập nhật mới nhất hàng ngày"
+        movies={newMovies?.items || []}
+        loading={loadingNew}
+        viewAllLink="/danh-sach/phim-moi"
+      />
 
-        <MovieSection
-          title="Phim Lẻ Hot"
-          movies={phimLe?.items || []}
-          loading={loadingPhimLe}
-          viewAllLink="/danh-sach/phim-le"
-        />
+      {/* Genre Highlights */}
+      <GenreHighlights />
 
-        <MovieSection
-          title="Hoạt Hình"
-          movies={hoatHinh?.items || []}
-          loading={loadingHoatHinh}
-          viewAllLink="/danh-sach/hoat-hinh"
-        />
+      <MovieCarousel
+        title="Phim Bộ Hot"
+        subtitle="Series phim được yêu thích nhất"
+        movies={phimBo?.items || []}
+        loading={loadingPhimBo}
+        viewAllLink="/danh-sach/phim-bo"
+      />
 
-        <MovieSection
-          title="TV Shows"
-          movies={tvShows?.items || []}
-          loading={loadingTvShows}
-          viewAllLink="/danh-sach/tv-shows"
-        />
-      </div>
+      {/* Featured Banners */}
+      <FeaturedBanner />
+
+      <MovieCarousel
+        title="Phim Lẻ Hay"
+        subtitle="Bộ sưu tập phim điện ảnh chất lượng"
+        movies={phimLe?.items || []}
+        loading={loadingPhimLe}
+        viewAllLink="/danh-sach/phim-le"
+      />
+
+      <MovieCarousel
+        title="Hoạt Hình"
+        subtitle="Animation & Anime cho mọi lứa tuổi"
+        movies={hoatHinh?.items || []}
+        loading={loadingHoatHinh}
+        viewAllLink="/danh-sach/hoat-hinh"
+      />
+
+      <MovieCarousel
+        title="TV Shows"
+        subtitle="Chương trình giải trí đa dạng"
+        movies={tvShows?.items || []}
+        loading={loadingTvShows}
+        viewAllLink="/danh-sach/tv-shows"
+      />
     </Layout>
   );
 };

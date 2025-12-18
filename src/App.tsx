@@ -24,6 +24,7 @@ import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import MyList from "./pages/MyList";
 import History from "./pages/History";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -72,6 +73,7 @@ const App = () => {
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/my-list" element={<MyList />} />
                   <Route path="/history" element={<History />} />
+                  <Route path="/admin" element={<Admin />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

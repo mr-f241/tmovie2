@@ -28,6 +28,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { InstantSearch } from '@/components/search/InstantSearch';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuthModal } from '@/hooks/useAuthModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +57,7 @@ export const Header = () => {
   const { t, i18n } = useTranslation();
   const { user, profile, signOut } = useAuth();
   const { resolvedTheme, setTheme } = useTheme();
+  const { openLogin } = useAuthModal();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -289,12 +291,12 @@ export const Header = () => {
               </DropdownMenu>
             ) : (
               <Button
-                asChild
                 variant="secondary"
                 size="sm"
                 className="hidden sm:flex"
+                onClick={openLogin}
               >
-                <Link to="/dang-nhap">Đăng nhập</Link>
+                Đăng nhập
               </Button>
             )}
 
@@ -422,13 +424,13 @@ export const Header = () => {
                       </button>
                     </>
                   ) : (
-                    <Link
-                      to="/dang-nhap"
-                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-primary bg-primary/10"
+                    <button
+                      onClick={openLogin}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-primary bg-primary/10 w-full"
                     >
                       <User className="h-5 w-5" />
                       Đăng nhập
-                    </Link>
+                    </button>
                   )}
 
                   {/* Theme & Language in Mobile */}

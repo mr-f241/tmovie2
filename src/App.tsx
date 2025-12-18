@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { securityClient } from '@/lib/security';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { AuthModal } from '@/components/auth/AuthModal';
+import { useAuthModal } from '@/hooks/useAuthModal';
 
 import Index from "./pages/Index";
 import MovieList from "./pages/MovieList";
@@ -31,6 +33,12 @@ const queryClient = new QueryClient({
   },
 });
 
+// Auth Modal wrapper component
+const AuthModalWrapper = () => {
+  const { isOpen, mode, close } = useAuthModal();
+  return <AuthModal isOpen={isOpen} onClose={close} defaultMode={mode} />;
+};
+
 const App = () => {
   useEffect(() => {
     securityClient.init().catch(console.error);
@@ -44,6 +52,7 @@ const App = () => {
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <AuthModalWrapper />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/danh-sach/:type" element={<MovieList />} />

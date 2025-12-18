@@ -75,19 +75,19 @@ const Settings: React.FC = () => {
 
               <div className="space-y-6">
                 {/* Theme */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <Label className="text-base">{t('settings.theme')}</Label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {themeOptions.map((option) => (
                       <Button
                         key={option.value}
                         variant={theme === option.value ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setTheme(option.value as 'dark' | 'light' | 'system')}
-                        className="gap-2"
+                        className="gap-2 flex-1 sm:flex-none min-w-0"
                       >
-                        <option.icon className="w-4 h-4" />
-                        {option.label}
+                        <option.icon className="w-4 h-4 shrink-0" />
+                        <span className="truncate">{option.label}</span>
                       </Button>
                     ))}
                   </div>
@@ -234,12 +234,12 @@ const Settings: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
-                    <div>
-                      <p className="font-medium">{profile?.display_name || profile?.username}</p>
-                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-secondary/30 rounded-lg">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">{profile?.display_name || profile?.username}</p>
+                      <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                     </div>
-                    <Button variant="outline" onClick={() => navigate('/profile')}>
+                    <Button variant="outline" onClick={() => navigate('/profile')} className="w-full sm:w-auto shrink-0">
                       {t('profile.editProfile')}
                     </Button>
                   </div>

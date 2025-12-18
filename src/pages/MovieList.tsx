@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { fetchMoviesByType, fetchNewMovies, fetchCategories, fetchCountries } from '@/services/api';
 import { Layout } from '@/components/layout/Layout';
@@ -18,6 +18,7 @@ const typeNames: Record<string, string> = {
 
 const MovieList = () => {
   const { type = 'phim-moi' } = useParams();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
 
@@ -50,6 +51,14 @@ const MovieList = () => {
     setSearchParams({ page: String(newPage) });
   };
 
+  const handleCategoryChange = (categorySlug: string) => {
+    navigate(`/the-loai/${categorySlug}`);
+  };
+
+  const handleCountryChange = (countrySlug: string) => {
+    navigate(`/quoc-gia/${countrySlug}`);
+  };
+
   const totalPages = data?.pagination?.totalPages || 1;
   const currentPage = data?.pagination?.currentPage || page;
 
@@ -69,7 +78,7 @@ const MovieList = () => {
 
           {/* Filters */}
           <div className="flex items-center gap-3">
-            <Select>
+            <Select onValueChange={handleCategoryChange}>
               <SelectTrigger className="w-[150px] bg-secondary/50">
                 <SelectValue placeholder="Thể loại" />
               </SelectTrigger>
@@ -82,7 +91,7 @@ const MovieList = () => {
               </SelectContent>
             </Select>
 
-            <Select>
+            <Select onValueChange={handleCountryChange}>
               <SelectTrigger className="w-[150px] bg-secondary/50">
                 <SelectValue placeholder="Quốc gia" />
               </SelectTrigger>

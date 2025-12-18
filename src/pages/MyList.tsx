@@ -1,17 +1,40 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Heart, Trash2 } from 'lucide-react';
+import { Heart, Trash2, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { Layout } from '@/components/layout/Layout';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/hooks/useAuthModal';
 import { Button } from '@/components/ui/button';
 import { MovieCard } from '@/components/movie/MovieCard';
 
 const MyList: React.FC = () => {
   const { t } = useTranslation();
   const { favorites, removeFavorite, isLoaded } = useFavorites();
+  const { user, isLoading } = useAuth();
+  const { openLogin } = useAuthModal();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      openLogin();
+    }
+  }, [user, isLoading, openLogin]);
+
+  if (!user) {
+    return (
+      <Layout>
+        <div className="container py-8 flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">Vui lòng đăng nhập để xem danh sách yêu thích</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

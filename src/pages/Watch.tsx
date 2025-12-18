@@ -3,7 +3,7 @@ import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { 
   ChevronLeft, ChevronRight, Home, List, Server, AlertCircle, 
-  Loader2, Heart, Share2, Shield
+  Loader2, Heart, Share2, Shield, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchMovieDetail, getImageUrl } from '@/services/api';
@@ -11,6 +11,8 @@ import { useWatchHistory } from '@/hooks/useWatchHistory';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useVisibilityProtection, useContextMenuProtection } from '@/hooks/useSecurityProtection';
 import { VideoPlayer } from '@/components/player/VideoPlayer';
+import { MovieComments } from '@/components/movie/MovieComments';
+import { CreateRoomModal } from '@/components/watch/CreateRoomModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,6 +23,7 @@ const Watch = () => {
   const { slug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentServer, setCurrentServer] = useState(0);
+  const [showRoomModal, setShowRoomModal] = useState(false);
   const playerRef = useRef<HTMLDivElement>(null);
   
   const { addToHistory, updateProgress } = useWatchHistory();
@@ -177,6 +180,14 @@ const Watch = () => {
                 <Heart className={`h-4 w-4 mr-1.5 ${isMovieFavorite ? 'fill-current' : ''}`} />
                 {isMovieFavorite ? 'Đã thích' : 'Thích'}
               </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowRoomModal(true)}
+              >
+                <Users className="h-4 w-4 mr-1.5" />
+                Xem chung
+              </Button>
             </div>
 
             {/* Episode Navigation */}
@@ -287,8 +298,24 @@ const Watch = () => {
               </Link>
             ))}
           </div>
+
+          {/* Comments */}
+          <div className="pt-6 border-t border-border mt-6">
+            <MovieComments movieSlug={movie.slug} episodeSlug={currentEpisode.slug} />
+          </div>
         </motion.div>
       </div>
+
+      {/* Watch Together Modal */}
+      <CreateRoomModal
+        isOpen={showRoomModal}
+        onClose={() => setShowRoomModal(false)}
+        movieSlug={movie.slug}
+        movieName={movie.name}
+        posterUrl={getImageUrl(movie.poster_url)}
+        episodeSlug={currentEpisode.slug}
+        episodeName={currentEpisode.name}
+      />
     </div>
   );
 };

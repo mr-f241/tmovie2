@@ -88,19 +88,29 @@ serve(async (req) => {
       });
     }
 
-    // Validate timestamp (reject stale requests > 5 minutes to allow for clock drift)
+    // Validate timestamp (soft-check to tolerate clock drift / different formats)
     if (requestTimestamp) {
-      const timestamp = parseInt(requestTimestamp);
+      const raw = requestTimestamp.trim();
+      let ts = Number(raw);
+
+      // If the client sends seconds, convert to ms
+      if (Number.isFinite(ts) && raw.length <= 10) ts = ts * 1000;
+
+      // If it's not a plain number, try ISO date parsing (e.g. "2025-12-18T...")
+      if (!Number.isFinite(ts)) {
+        const parsedIso = Date.parse(raw);
+        ts = Number.isFinite(parsedIso) ? parsedIso : NaN;
+      }
+
       const now = Date.now();
-      // Allow 5 minute window for clock drift between client and server
-      if (Math.abs(now - timestamp) > 300000) {
-        console.log('Stale request rejected');
-        return new Response(JSON.stringify({ error: 'Request expired' }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+      const MAX_CLOCK_SKEW_MS = 30 * 60 * 1000; // 30 minutes
+
+      if (Number.isFinite(ts) && Math.abs(now - ts) > MAX_CLOCK_SKEW_MS) {
+        // Don't hard-fail; allow request to avoid blank screens on misconfigured clocks.
+        console.log('Stale request timestamp detected (allowing request)');
       }
     }
+
 
     // Verify session
     const { data: session, error: sessionError } = await supabase

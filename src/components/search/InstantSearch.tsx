@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, X, Loader2, Film, Youtube, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -23,10 +23,10 @@ interface InstantSearchProps {
 }
 
 // Fetch YouTube results
-const searchYouTube = async (keyword: string): Promise<YouTubeResult[]> => {
+const searchYouTube = async (keyword: string, maxResults = 3): Promise<YouTubeResult[]> => {
   try {
     const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/youtube-search?keyword=${encodeURIComponent(keyword)}&maxResults=3`,
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/youtube-search?keyword=${encodeURIComponent(keyword)}&maxResults=${maxResults}`,
       {
         method: 'GET',
         headers: {
@@ -34,12 +34,12 @@ const searchYouTube = async (keyword: string): Promise<YouTubeResult[]> => {
         },
       }
     );
-    
+
     if (!response.ok) {
       console.error('YouTube search failed:', response.status);
       return [];
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('YouTube search error:', error);
@@ -48,14 +48,22 @@ const searchYouTube = async (keyword: string): Promise<YouTubeResult[]> => {
 };
 
 export const InstantSearch = ({ onClose, initialQuery }: InstantSearchProps) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { playYouTube } = useYouTubePlayer();
+
+  const isPageMode = !onClose && location.pathname.startsWith('/tim-kiem');
+
   const [query, setQuery] = useState(initialQuery ?? '');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [showResults, setShowResults] = useState(false);
+  const [showResults, setShowResults] = useState(isPageMode);
   const [activeTab, setActiveTab] = useState<'movies' | 'youtube'>('movies');
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-  const { playYouTube } = useYouTubePlayer();
+
+  useEffect(() => {
+    setQuery(initialQuery ?? '');
+  }, [initialQuery]);
 
   // Debounce search query
   useEffect(() => {
@@ -72,17 +80,19 @@ export const InstantSearch = ({ onClose, initialQuery }: InstantSearchProps) => 
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Movie search query
+  // Movie search query (dropdown only)
   const { data: movieData, isLoading: isLoadingMovies } = useQuery({
     queryKey: ['instantSearch', debouncedQuery],
     queryFn: () => searchMovies(debouncedQuery, 1),
-    enabled: debouncedQuery.length >= 2,
+    enabled: !isPageMode && debouncedQuery.length >= 2,
   });
+
+  const youtubeMaxResults = isPageMode ? 24 : 3;
 
   // YouTube search query
   const { data: youtubeData, isLoading: isLoadingYouTube } = useQuery({
-    queryKey: ['youtubeSearch', debouncedQuery],
-    queryFn: () => searchYouTube(debouncedQuery),
+    queryKey: ['youtubeSearch', debouncedQuery, youtubeMaxResults],
+    queryFn: () => searchYouTube(debouncedQuery, youtubeMaxResults),
     enabled: debouncedQuery.length >= 2,
   });
 

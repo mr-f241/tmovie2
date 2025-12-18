@@ -22,14 +22,20 @@ export const InstantSearch = ({ onClose, initialQuery }: InstantSearchProps) => 
   const { playYouTube } = useYouTubePlayer();
 
   const [query, setQuery] = useState(initialQuery ?? '');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState(
+    (initialQuery ?? '').length >= 2 ? initialQuery ?? '' : ''
+  );
   const [showResults, setShowResults] = useState(false);
   const [activeTab, setActiveTab] = useState<'movies' | 'youtube'>('movies');
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Sync with initialQuery changes
   useEffect(() => {
     setQuery(initialQuery ?? '');
+    if ((initialQuery ?? '').length >= 2) {
+      setDebouncedQuery(initialQuery ?? '');
+    }
   }, [initialQuery]);
 
   // Debounce search query

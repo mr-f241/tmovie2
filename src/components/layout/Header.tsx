@@ -257,25 +257,25 @@ export const Header = () => {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/ho-so" className="flex items-center gap-2">
+                    <Link to="/profile" className="flex items-center gap-2">
                       <User className="h-4 w-4" />
                       Hồ sơ
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/danh-sach-cua-toi" className="flex items-center gap-2">
+                    <Link to="/my-list" className="flex items-center gap-2">
                       <Heart className="h-4 w-4" />
                       Danh sách yêu thích
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/lich-su" className="flex items-center gap-2">
+                    <Link to="/history" className="flex items-center gap-2">
                       <History className="h-4 w-4" />
                       Lịch sử xem
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/cai-dat" className="flex items-center gap-2">
+                    <Link to="/settings" className="flex items-center gap-2">
                       <Settings className="h-4 w-4" />
                       Cài đặt
                     </Link>
@@ -389,28 +389,28 @@ export const Header = () => {
                   {user ? (
                     <>
                       <Link
-                        to="/ho-so"
+                        to="/profile"
                         className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"
                       >
                         <User className="h-5 w-5" />
                         Hồ sơ
                       </Link>
                       <Link
-                        to="/danh-sach-cua-toi"
+                        to="/my-list"
                         className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"
                       >
                         <Heart className="h-5 w-5" />
                         Danh sách yêu thích
                       </Link>
                       <Link
-                        to="/lich-su"
+                        to="/history"
                         className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"
                       >
                         <History className="h-5 w-5" />
                         Lịch sử xem
                       </Link>
                       <Link
-                        to="/cai-dat"
+                        to="/settings"
                         className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"
                       >
                         <Settings className="h-5 w-5" />

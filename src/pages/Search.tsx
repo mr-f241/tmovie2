@@ -79,10 +79,10 @@ const Search = () => {
 
   return (
     <Layout>
-      <main className="container py-8">
+      <main className="container py-6 sm:py-8 px-4">
         {/* Search Header */}
-        <header className="max-w-2xl mx-auto mb-12">
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-center mb-6">
+        <header className="max-w-2xl mx-auto mb-8 sm:mb-12">
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4 sm:mb-6">
             Tìm kiếm
           </h1>
           <div className="flex justify-center">
@@ -94,51 +94,51 @@ const Search = () => {
         {keyword && (
           <section>
             {/* Tabs */}
-            <div className="flex items-center gap-4 mb-6 border-b border-border">
+            <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6 border-b border-border overflow-x-auto">
               <button
                 onClick={() => handleTabChange('movies')}
-                className={`flex items-center gap-2 pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                className={`flex items-center gap-1.5 sm:gap-2 pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   tab === 'movies'
                     ? 'border-primary text-primary'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Film className="h-4 w-4" />
-                Phim
+                <span>Phim</span>
                 {tab === 'movies' && movieCount > 0 && (
-                  <span className="text-xs bg-primary/10 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-primary/10 px-1.5 sm:px-2 py-0.5 rounded-full">
                     {movieCount}
                   </span>
                 )}
               </button>
               <button
                 onClick={() => handleTabChange('youtube')}
-                className={`flex items-center gap-2 pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                className={`flex items-center gap-1.5 sm:gap-2 pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   tab === 'youtube'
                     ? 'border-red-500 text-red-500'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Youtube className="h-4 w-4" />
-                YouTube
+                <span>YouTube</span>
                 {tab === 'youtube' && youtubeCount > 0 && (
-                  <span className="text-xs bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full">
-                    {youtubeCount > 1000 ? '1000+' : youtubeCount}
+                  <span className="text-xs bg-red-500/10 text-red-500 px-1.5 sm:px-2 py-0.5 rounded-full">
+                    {youtubeCount > 1000 ? '1k+' : youtubeCount}
                   </span>
                 )}
               </button>
             </div>
 
             {/* Results Header */}
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-xl font-semibold">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 sm:mb-6">
+              <h2 className="font-display text-lg sm:text-xl font-semibold line-clamp-1">
                 Kết quả cho &quot;{keyword}&quot;
               </h2>
               {tab === 'movies' && movieCount > 0 && (
-                <p className="text-muted-foreground">{movieCount} phim</p>
+                <p className="text-sm text-muted-foreground">{movieCount} phim</p>
               )}
               {tab === 'youtube' && youtubeCount > 0 && (
-                <p className="text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   {youtubeCount > 1000 ? '1000+' : youtubeCount} video
                 </p>
               )}
@@ -151,18 +151,19 @@ const Search = () => {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 mt-12">
+                  <div className="flex items-center justify-center gap-2 mt-8 sm:mt-12">
                     <Button
                       variant="secondary"
                       size="icon"
                       disabled={page <= 1}
                       onClick={() => handlePageChange(page - 1)}
+                      className="h-9 w-9 sm:h-10 sm:w-10"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
 
-                    <span className="px-4 text-sm text-muted-foreground">
-                      Trang {page} / {totalPages}
+                    <span className="px-3 sm:px-4 text-xs sm:text-sm text-muted-foreground">
+                      {page} / {totalPages}
                     </span>
 
                     <Button
@@ -170,6 +171,7 @@ const Search = () => {
                       size="icon"
                       disabled={page >= totalPages}
                       onClick={() => handlePageChange(page + 1)}
+                      className="h-9 w-9 sm:h-10 sm:w-10"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -186,18 +188,19 @@ const Search = () => {
 
                 {/* YouTube Pagination */}
                 {(youtubeData?.nextPageToken || youtubePageHistory.length > 0) && (
-                  <div className="flex items-center justify-center gap-2 mt-12">
+                  <div className="flex items-center justify-center gap-2 mt-8 sm:mt-12">
                     <Button
                       variant="secondary"
                       size="icon"
                       disabled={youtubePageHistory.length === 0}
                       onClick={handleYouTubePrevPage}
+                      className="h-9 w-9 sm:h-10 sm:w-10"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
 
-                    <span className="px-4 text-sm text-muted-foreground">
-                      Trang {currentYouTubePage} / {estimatedYouTubeTotalPages || '?'}
+                    <span className="px-3 sm:px-4 text-xs sm:text-sm text-muted-foreground">
+                      {currentYouTubePage} / {estimatedYouTubeTotalPages || '?'}
                     </span>
 
                     <Button
@@ -205,6 +208,7 @@ const Search = () => {
                       size="icon"
                       disabled={!youtubeData?.nextPageToken}
                       onClick={handleYouTubeNextPage}
+                      className="h-9 w-9 sm:h-10 sm:w-10"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -217,9 +221,9 @@ const Search = () => {
 
         {/* Empty State */}
         {!keyword && (
-          <section className="text-center py-12">
-            <SearchIcon className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-            <p className="text-muted-foreground">Nhập từ khóa để tìm kiếm phim hoặc video</p>
+          <section className="text-center py-8 sm:py-12">
+            <SearchIcon className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50 mx-auto mb-4" />
+            <p className="text-sm sm:text-base text-muted-foreground">Nhập từ khóa để tìm kiếm phim hoặc video</p>
           </section>
         )}
       </main>

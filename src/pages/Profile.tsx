@@ -146,25 +146,25 @@ const Profile: React.FC = () => {
 
   return (
     <Layout>
-      <div className="container max-w-2xl py-8 px-4">
+      <div className="container max-w-2xl py-6 sm:py-8 px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl font-display font-bold mb-8">{t('profile.title')}</h1>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold mb-6 sm:mb-8">{t('profile.title')}</h1>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
             {/* Avatar Section */}
-            <div className="glass-card rounded-xl p-6">
-              <div className="flex items-center gap-6">
-                <div className="relative">
-                  <Avatar className="w-24 h-24">
+            <div className="glass-card rounded-xl p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                <div className="relative shrink-0">
+                  <Avatar className="w-20 h-20 sm:w-24 sm:h-24">
                     <AvatarImage src={formData.avatar_url || undefined} />
-                    <AvatarFallback className="text-2xl bg-primary/10">
+                    <AvatarFallback className="text-xl sm:text-2xl bg-primary/10">
                       {formData.display_name?.[0]?.toUpperCase() || 
                        formData.username?.[0]?.toUpperCase() || 
-                       <User className="w-10 h-10" />}
+                       <User className="w-8 h-8 sm:w-10 sm:h-10" />}
                     </AvatarFallback>
                   </Avatar>
                   
@@ -191,12 +191,12 @@ const Profile: React.FC = () => {
                     )}
                   </button>
                 </div>
-                <div>
-                  <h2 className="text-xl font-semibold">
+                <div className="text-center sm:text-left min-w-0 flex-1">
+                  <h2 className="text-lg sm:text-xl font-semibold truncate">
                     {profile?.display_name || profile?.username || 'User'}
                   </h2>
-                  <p className="text-muted-foreground">{user.email}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm sm:text-base text-muted-foreground truncate">{user.email}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                     {t('profile.memberSince')}: {new Date(user.created_at).toLocaleDateString('vi-VN')}
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
@@ -207,31 +207,33 @@ const Profile: React.FC = () => {
             </div>
 
             {/* Profile Info */}
-            <div className="glass-card rounded-xl p-6 space-y-6">
+            <div className="glass-card rounded-xl p-4 sm:p-6 space-y-4 sm:space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="display_name">{t('profile.displayName')}</Label>
+                <Label htmlFor="display_name" className="text-sm sm:text-base">{t('profile.displayName')}</Label>
                 <Input
                   id="display_name"
                   name="display_name"
                   value={formData.display_name}
                   onChange={handleChange}
                   placeholder="Tên hiển thị"
+                  className="h-10 sm:h-11"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="username">{t('auth.username')}</Label>
+                <Label htmlFor="username" className="text-sm sm:text-base">{t('auth.username')}</Label>
                 <Input
                   id="username"
                   name="username"
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="username"
+                  className="h-10 sm:h-11"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="bio">{t('profile.bio')}</Label>
+                <Label htmlFor="bio" className="text-sm sm:text-base">{t('profile.bio')}</Label>
                 <Textarea
                   id="bio"
                   name="bio"
@@ -243,13 +245,14 @@ const Profile: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="avatar_url">{t('profile.avatar')} URL (hoặc tải ảnh lên)</Label>
+                <Label htmlFor="avatar_url" className="text-sm sm:text-base">{t('profile.avatar')} URL (hoặc tải ảnh lên)</Label>
                 <Input
                   id="avatar_url"
                   name="avatar_url"
                   value={formData.avatar_url}
                   onChange={handleChange}
                   placeholder="https://example.com/avatar.jpg"
+                  className="h-10 sm:h-11"
                 />
               </div>
             </div>

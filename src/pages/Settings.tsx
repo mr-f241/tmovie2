@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Select,
   SelectContent,
@@ -52,42 +53,42 @@ const Settings: React.FC = () => {
 
   return (
     <Layout>
-      <div className="container max-w-4xl py-8 px-4">
+      <div className="container max-w-4xl py-6 sm:py-8 px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl font-display font-bold mb-8">{t('settings.title')}</h1>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold mb-6 sm:mb-8">{t('settings.title')}</h1>
 
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {/* Appearance Section */}
-            <section className="glass-card rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <section className="glass-card rounded-xl p-4 sm:p-6">
+              <div className="flex items-start sm:items-center gap-3 mb-4 sm:mb-6">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <Palette className="w-5 h-5 text-primary" />
                 </div>
-                <div>
-                  <h2 className="text-xl font-semibold">{t('settings.appearance')}</h2>
-                  <p className="text-sm text-muted-foreground">Tùy chỉnh giao diện ứng dụng</p>
+                <div className="min-w-0">
+                  <h2 className="text-lg sm:text-xl font-semibold">{t('settings.appearance')}</h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Tùy chỉnh giao diện ứng dụng</p>
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Theme */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <Label className="text-base">{t('settings.theme')}</Label>
-                  <div className="flex flex-wrap gap-2">
+                <div className="space-y-3">
+                  <Label className="text-sm sm:text-base">{t('settings.theme')}</Label>
+                  <div className="grid grid-cols-3 gap-2">
                     {themeOptions.map((option) => (
                       <Button
                         key={option.value}
                         variant={theme === option.value ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setTheme(option.value as 'dark' | 'light' | 'system')}
-                        className="gap-2 flex-1 sm:flex-none min-w-0"
+                        className="gap-1.5 sm:gap-2 px-2 sm:px-3 h-9 sm:h-10"
                       >
                         <option.icon className="w-4 h-4 shrink-0" />
-                        <span className="truncate">{option.label}</span>
+                        <span className="text-xs sm:text-sm truncate">{option.label}</span>
                       </Button>
                     ))}
                   </div>
@@ -96,16 +97,16 @@ const Settings: React.FC = () => {
                 <Separator />
 
                 {/* Language */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
                   <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-muted-foreground" />
-                    <Label className="text-base">{t('settings.language')}</Label>
+                    <Globe className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <Label className="text-sm sm:text-base">{t('settings.language')}</Label>
                   </div>
                   <Select
                     value={i18n.language}
                     onValueChange={(value) => changeLanguage(value)}
                   >
-                    <SelectTrigger className="w-40">
+                    <SelectTrigger className="w-full sm:w-40">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -124,36 +125,36 @@ const Settings: React.FC = () => {
             </section>
 
             {/* Playback Section */}
-            <section className="glass-card rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <section className="glass-card rounded-xl p-4 sm:p-6">
+              <div className="flex items-start sm:items-center gap-3 mb-4 sm:mb-6">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <Play className="w-5 h-5 text-primary" />
                 </div>
-                <div>
-                  <h2 className="text-xl font-semibold">{t('settings.playback')}</h2>
-                  <p className="text-sm text-muted-foreground">Cài đặt phát video</p>
+                <div className="min-w-0">
+                  <h2 className="text-lg sm:text-xl font-semibold">{t('settings.playback')}</h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Cài đặt phát video</p>
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <Label className="text-base">{t('settings.autoplay')}</Label>
+              <div className="space-y-4 sm:space-y-6">
+                <div className="flex items-center justify-between gap-4">
+                  <Label className="text-sm sm:text-base flex-1">{t('settings.autoplay')}</Label>
                   <Switch defaultChecked />
                 </div>
 
                 <Separator />
 
-                <div className="flex items-center justify-between">
-                  <Label className="text-base">{t('settings.autoNextEpisode')}</Label>
+                <div className="flex items-center justify-between gap-4">
+                  <Label className="text-sm sm:text-base flex-1">{t('settings.autoNextEpisode')}</Label>
                   <Switch defaultChecked />
                 </div>
 
                 <Separator />
 
-                <div className="flex items-center justify-between">
-                  <Label className="text-base">{t('settings.defaultQuality')}</Label>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                  <Label className="text-sm sm:text-base">{t('settings.defaultQuality')}</Label>
                   <Select defaultValue="auto">
-                    <SelectTrigger className="w-32">
+                    <SelectTrigger className="w-full sm:w-32">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -167,10 +168,10 @@ const Settings: React.FC = () => {
 
                 <Separator />
 
-                <div className="flex items-center justify-between">
-                  <Label className="text-base">{t('settings.defaultSpeed')}</Label>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                  <Label className="text-sm sm:text-base">{t('settings.defaultSpeed')}</Label>
                   <Select defaultValue="1">
-                    <SelectTrigger className="w-32">
+                    <SelectTrigger className="w-full sm:w-32">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -187,34 +188,34 @@ const Settings: React.FC = () => {
             </section>
 
             {/* Notifications Section */}
-            <section className="glass-card rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <section className="glass-card rounded-xl p-4 sm:p-6">
+              <div className="flex items-start sm:items-center gap-3 mb-4 sm:mb-6">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <Bell className="w-5 h-5 text-primary" />
                 </div>
-                <div>
-                  <h2 className="text-xl font-semibold">{t('settings.notifications')}</h2>
-                  <p className="text-sm text-muted-foreground">Quản lý thông báo</p>
+                <div className="min-w-0">
+                  <h2 className="text-lg sm:text-xl font-semibold">{t('settings.notifications')}</h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Quản lý thông báo</p>
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <Label className="text-base">{t('settings.enableNotifications')}</Label>
+              <div className="space-y-4 sm:space-y-6">
+                <div className="flex items-center justify-between gap-4">
+                  <Label className="text-sm sm:text-base flex-1">{t('settings.enableNotifications')}</Label>
                   <Switch defaultChecked />
                 </div>
 
                 <Separator />
 
-                <div className="flex items-center justify-between">
-                  <Label className="text-base">{t('settings.newEpisodes')}</Label>
+                <div className="flex items-center justify-between gap-4">
+                  <Label className="text-sm sm:text-base flex-1">{t('settings.newEpisodes')}</Label>
                   <Switch defaultChecked />
                 </div>
 
                 <Separator />
 
-                <div className="flex items-center justify-between">
-                  <Label className="text-base">{t('settings.recommendations')}</Label>
+                <div className="flex items-center justify-between gap-4">
+                  <Label className="text-sm sm:text-base flex-1">{t('settings.recommendations')}</Label>
                   <Switch />
                 </div>
               </div>
@@ -222,26 +223,43 @@ const Settings: React.FC = () => {
 
             {/* Account Section */}
             {user && (
-              <section className="glass-card rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <section className="glass-card rounded-xl p-4 sm:p-6">
+                <div className="flex items-start sm:items-center gap-3 mb-4 sm:mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                     <Shield className="w-5 h-5 text-primary" />
                   </div>
-                  <div>
-                    <h2 className="text-xl font-semibold">{t('settings.account')}</h2>
-                    <p className="text-sm text-muted-foreground">Quản lý tài khoản</p>
+                  <div className="min-w-0">
+                    <h2 className="text-lg sm:text-xl font-semibold">{t('settings.account')}</h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Quản lý tài khoản</p>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-secondary/30 rounded-lg">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium truncate">{profile?.display_name || profile?.username}</p>
-                      <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                  {/* User Info Card */}
+                  <div className="p-4 bg-secondary/30 rounded-lg">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <Avatar className="h-12 w-12 shrink-0">
+                          <AvatarImage src={profile?.avatar_url || ''} />
+                          <AvatarFallback className="bg-primary/20 text-primary">
+                            {profile?.display_name?.[0] || user.email?.[0]?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate">
+                            {profile?.display_name || profile?.username || 'User'}
+                          </p>
+                          <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                        </div>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => navigate('/profile')} 
+                        className="w-full sm:w-auto shrink-0"
+                      >
+                        {t('profile.editProfile')}
+                      </Button>
                     </div>
-                    <Button variant="outline" onClick={() => navigate('/profile')} className="w-full sm:w-auto shrink-0">
-                      {t('profile.editProfile')}
-                    </Button>
                   </div>
 
                   <Separator />
@@ -262,8 +280,8 @@ const Settings: React.FC = () => {
             {!user && (
               <section className="glass-card rounded-xl p-6 text-center">
                 <User className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <h2 className="text-xl font-semibold mb-2">Đăng nhập để đồng bộ cài đặt</h2>
-                <p className="text-muted-foreground mb-4">
+                <h2 className="text-lg sm:text-xl font-semibold mb-2">Đăng nhập để đồng bộ cài đặt</h2>
+                <p className="text-sm text-muted-foreground mb-4">
                   Đăng nhập để lưu cài đặt và đồng bộ trên mọi thiết bị
                 </p>
                 <Button onClick={() => {

@@ -25,12 +25,13 @@ const CategoryPage = ({ type }: CategoryPageProps) => {
     enabled: !!slug,
   });
 
-  const { data: items } = useQuery({
+  const { data: listData } = useQuery({
     queryKey: [type === 'category' ? 'categories' : 'countries'],
     queryFn: listFn,
   });
 
-  const currentItem = items?.find((item) => item.slug === slug);
+  const items = Array.isArray(listData) ? listData : (listData as { items?: { slug: string; name: string }[] })?.items || [];
+  const currentItem = items.find((item) => item.slug === slug);
 
   useEffect(() => {
     setPage(1);

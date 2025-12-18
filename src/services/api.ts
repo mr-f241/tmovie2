@@ -60,8 +60,11 @@ export const fetchMovieDetail = async (slug: string): Promise<MovieDetail | null
 // Fetch categories via secure proxy
 export const fetchCategories = async (): Promise<Category[]> => {
   try {
-    const data = await securityClient.request<Category[]>('categories', {});
-    return data || [];
+    const data = await securityClient.request<any>('categories', {});
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.items)) return data.items;
+    if (Array.isArray(data?.data?.items)) return data.data.items;
+    return [];
   } catch (error) {
     console.error('Failed to fetch categories:', error);
     return [];
@@ -71,8 +74,11 @@ export const fetchCategories = async (): Promise<Category[]> => {
 // Fetch countries via secure proxy
 export const fetchCountries = async (): Promise<Country[]> => {
   try {
-    const data = await securityClient.request<Country[]>('countries', {});
-    return data || [];
+    const data = await securityClient.request<any>('countries', {});
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.items)) return data.items;
+    if (Array.isArray(data?.data?.items)) return data.data.items;
+    return [];
   } catch (error) {
     console.error('Failed to fetch countries:', error);
     return [];

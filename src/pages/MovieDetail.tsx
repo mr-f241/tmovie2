@@ -201,16 +201,16 @@ const MovieDetail = () => {
   if (isLoading) {
     return (
       <Layout>
-        <div className="relative min-h-[60vh]">
+        <div className="relative min-h-[50vh] sm:min-h-[60vh]">
           <Skeleton className="absolute inset-0" />
         </div>
-        <div className="container py-8">
-          <div className="grid md:grid-cols-[300px_1fr] gap-8">
-            <Skeleton className="aspect-[2/3] rounded-xl" />
+        <div className="container py-6 sm:py-8 px-4">
+          <div className="grid md:grid-cols-[250px_1fr] lg:grid-cols-[300px_1fr] gap-6 sm:gap-8">
+            <Skeleton className="aspect-[2/3] rounded-xl mx-auto w-48 sm:w-full" />
             <div className="space-y-4">
-              <Skeleton className="h-10 w-3/4" />
-              <Skeleton className="h-6 w-1/2" />
-              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-8 sm:h-10 w-3/4" />
+              <Skeleton className="h-5 sm:h-6 w-1/2" />
+              <Skeleton className="h-20 sm:h-24 w-full" />
             </div>
           </div>
         </div>
@@ -242,7 +242,7 @@ const MovieDetail = () => {
   return (
     <Layout>
       {/* Hero Backdrop */}
-      <div className="relative min-h-[60vh] md:min-h-[70vh]">
+      <div className="relative min-h-[50vh] sm:min-h-[60vh] md:min-h-[70vh]">
         <motion.div
           initial={{ scale: 1.1 }}
           animate={{ scale: 1 }}
@@ -263,12 +263,12 @@ const MovieDetail = () => {
       </div>
 
       {/* Content */}
-      <div className="container relative -mt-56 md:-mt-80 pb-12">
+      <div className="container relative -mt-40 sm:-mt-56 md:-mt-80 pb-8 sm:pb-12 px-4">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="grid md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] gap-6 md:gap-10"
+          className="grid md:grid-cols-[240px_1fr] lg:grid-cols-[300px_1fr] gap-5 sm:gap-6 md:gap-10"
         >
           {/* Poster */}
           <div className="flex flex-col gap-4">
@@ -363,10 +363,10 @@ const MovieDetail = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
+              <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
                 {movie.name}
               </h1>
-              <p className="text-lg text-muted-foreground mt-2">{movie.origin_name}</p>
+              <p className="text-base sm:text-lg text-muted-foreground mt-1 sm:mt-2">{movie.origin_name}</p>
             </motion.div>
 
             {/* Meta Info */}
@@ -470,20 +470,23 @@ const MovieDetail = () => {
               transition={{ delay: 0.8 }}
             >
               <Tabs defaultValue="episodes" className="w-full">
-                <TabsList className="w-full justify-start bg-secondary/50 p-1 rounded-xl">
-                  <TabsTrigger value="episodes" className="rounded-lg">
-                    <List className="h-4 w-4 mr-2" />
-                    Tập phim
+                <TabsList className="w-full justify-start bg-secondary/50 p-1 rounded-xl overflow-x-auto">
+                  <TabsTrigger value="episodes" className="rounded-lg text-xs sm:text-sm">
+                    <List className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <span className="hidden xs:inline">Tập phim</span>
+                    <span className="xs:hidden">Tập</span>
                   </TabsTrigger>
-                  <TabsTrigger value="info" className="rounded-lg">
-                    <Info className="h-4 w-4 mr-2" />
-                    Thông tin
+                  <TabsTrigger value="info" className="rounded-lg text-xs sm:text-sm">
+                    <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <span className="hidden xs:inline">Thông tin</span>
+                    <span className="xs:hidden">Info</span>
                   </TabsTrigger>
-                  <TabsTrigger value="comments" className="rounded-lg">
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Bình luận
+                  <TabsTrigger value="comments" className="rounded-lg text-xs sm:text-sm">
+                    <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <span className="hidden xs:inline">Bình luận</span>
+                    <span className="xs:hidden">Chat</span>
                     {comments && comments.length > 0 && (
-                      <Badge variant="secondary" className="ml-2 text-xs">
+                      <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs">
                         {comments.length}
                       </Badge>
                     )}

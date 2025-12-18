@@ -14,13 +14,151 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      rate_limits: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          id: string
+          identifier: string
+          request_count: number | null
+          window_start: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          id?: string
+          identifier: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          id?: string
+          identifier?: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Relationships: []
+      }
+      route_tokens: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          route_token: string
+          route_type: string
+          session_token: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          route_token: string
+          route_type: string
+          session_token: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          route_token?: string
+          route_type?: string
+          session_token?: string
+        }
+        Relationships: []
+      }
+      security_logs: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          ip_hash: string | null
+          session_token: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          ip_hash?: string | null
+          session_token?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          ip_hash?: string | null
+          session_token?: string | null
+        }
+        Relationships: []
+      }
+      security_sessions: {
+        Row: {
+          block_reason: string | null
+          created_at: string | null
+          expires_at: string | null
+          fingerprint_hash: string | null
+          id: string
+          ip_hash: string | null
+          is_blocked: boolean | null
+          last_request_at: string | null
+          request_count: number | null
+          session_token: string
+          trust_score: number | null
+          user_agent_hash: string | null
+        }
+        Insert: {
+          block_reason?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          fingerprint_hash?: string | null
+          id?: string
+          ip_hash?: string | null
+          is_blocked?: boolean | null
+          last_request_at?: string | null
+          request_count?: number | null
+          session_token: string
+          trust_score?: number | null
+          user_agent_hash?: string | null
+        }
+        Update: {
+          block_reason?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          fingerprint_hash?: string | null
+          id?: string
+          ip_hash?: string | null
+          is_blocked?: boolean | null
+          last_request_at?: string | null
+          request_count?: number | null
+          session_token?: string
+          trust_score?: number | null
+          user_agent_hash?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_rate_limit: {
+        Args: {
+          p_action_type: string
+          p_identifier: string
+          p_max_requests?: number
+          p_window_seconds?: number
+        }
+        Returns: {
+          allowed: boolean
+          current_count: number
+          reset_at: string
+        }[]
+      }
+      cleanup_expired_security_data: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

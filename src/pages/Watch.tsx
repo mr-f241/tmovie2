@@ -3,18 +3,17 @@ import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { 
   ChevronLeft, ChevronRight, Home, List, Server, AlertCircle, 
-  Loader2, Heart, Share2, Bookmark, Settings2 
+  Loader2, Heart, Share2, Shield
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchMovieDetail, getImageUrl } from '@/services/api';
 import { useWatchHistory } from '@/hooks/useWatchHistory';
 import { useFavorites } from '@/hooks/useFavorites';
-import { usePlayerSettings } from '@/hooks/usePlayerSettings';
+import { useVisibilityProtection, useContextMenuProtection } from '@/hooks/useSecurityProtection';
 import { VideoPlayer } from '@/components/player/VideoPlayer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
@@ -22,9 +21,20 @@ const Watch = () => {
   const { slug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentServer, setCurrentServer] = useState(0);
+  const playerRef = useRef<HTMLDivElement>(null);
   
   const { addToHistory, updateProgress } = useWatchHistory();
   const { isFavorite, toggleFavorite } = useFavorites();
+
+  // Apply security protections
+  useVisibilityProtection({
+    blurOnHidden: true,
+    onHidden: () => {
+      console.log('[Watch] User switched tab');
+    },
+  });
+
+  useContextMenuProtection(playerRef);
 
   const { data: movie, isLoading: movieLoading } = useQuery({
     queryKey: ['movie', slug],
@@ -118,8 +128,8 @@ const Watch = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Video Player */}
-      <div className="bg-black/50">
+      {/* Video Player with protection */}
+      <div className="bg-black/50" ref={playerRef}>
         <div className="container max-w-7xl py-4 lg:py-6">
           <VideoPlayer
             src={currentEpisode.link_embed}
@@ -197,8 +207,11 @@ const Watch = () => {
           {/* Movie Info */}
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
-              <h1 className="font-display text-2xl md:text-3xl font-bold">{movie.name}</h1>
-              <p className="text-muted-foreground mt-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h1 className="font-display text-2xl md:text-3xl font-bold">{movie.name}</h1>
+                <Shield className="h-5 w-5 text-green-500" />
+              </div>
+              <p className="text-muted-foreground">
                 {movie.origin_name} • <span className="text-primary">{currentEpisode.name}</span>
               </p>
             </div>

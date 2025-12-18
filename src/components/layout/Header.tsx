@@ -23,6 +23,20 @@ import {
   Globe,
   ChevronDown,
   Users,
+  Grid3X3,
+  MapPin,
+  Swords,
+  Heart as HeartIcon,
+  Ghost,
+  Laugh,
+  Wand2,
+  Plane,
+  Bomb,
+  Drama,
+  Baby,
+  GraduationCap,
+  Music,
+  Shirt,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,9 +51,20 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
 
 const navLinks = [
   { name: 'nav.home', path: '/', icon: Home },
@@ -47,6 +72,32 @@ const navLinks = [
   { name: 'nav.movies', path: '/danh-sach/phim-le', icon: Clapperboard },
   { name: 'nav.animation', path: '/danh-sach/hoat-hinh', icon: Sparkles },
   { name: 'nav.tvShows', path: '/danh-sach/tv-shows', icon: Gamepad2 },
+];
+
+const genres = [
+  { name: 'Hành Động', slug: 'hanh-dong', icon: Swords },
+  { name: 'Tình Cảm', slug: 'tinh-cam', icon: HeartIcon },
+  { name: 'Kinh Dị', slug: 'kinh-di', icon: Ghost },
+  { name: 'Hài Hước', slug: 'hai-huoc', icon: Laugh },
+  { name: 'Viễn Tưởng', slug: 'vien-tuong', icon: Wand2 },
+  { name: 'Phiêu Lưu', slug: 'phieu-luu', icon: Plane },
+  { name: 'Chiến Tranh', slug: 'chien-tranh', icon: Bomb },
+  { name: 'Tâm Lý', slug: 'tam-ly', icon: Drama },
+  { name: 'Gia Đình', slug: 'gia-dinh', icon: Baby },
+  { name: 'Học Đường', slug: 'hoc-duong', icon: GraduationCap },
+  { name: 'Âm Nhạc', slug: 'am-nhac', icon: Music },
+  { name: 'Thời Trang', slug: 'thoi-trang', icon: Shirt },
+];
+
+const countries = [
+  { name: 'Việt Nam', slug: 'viet-nam', flag: '🇻🇳' },
+  { name: 'Hàn Quốc', slug: 'han-quoc', flag: '🇰🇷' },
+  { name: 'Trung Quốc', slug: 'trung-quoc', flag: '🇨🇳' },
+  { name: 'Nhật Bản', slug: 'nhat-ban', flag: '🇯🇵' },
+  { name: 'Thái Lan', slug: 'thai-lan', flag: '🇹🇭' },
+  { name: 'Âu Mỹ', slug: 'au-my', flag: '🇺🇸' },
+  { name: 'Ấn Độ', slug: 'an-do', flag: '🇮🇳' },
+  { name: 'Đài Loan', slug: 'dai-loan', flag: '🇹🇼' },
 ];
 
 const languages = [
@@ -62,6 +113,8 @@ export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [mobileGenresOpen, setMobileGenresOpen] = useState(false);
+  const [mobileCountriesOpen, setMobileCountriesOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -74,6 +127,8 @@ export const Header = () => {
   useEffect(() => {
     setIsMenuOpen(false);
     setShowSearch(false);
+    setMobileGenresOpen(false);
+    setMobileCountriesOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -95,8 +150,6 @@ export const Header = () => {
   const changeLanguage = (code: string) => {
     i18n.changeLanguage(code);
   };
-
-  const currentLanguage = languages.find((l) => l.code === i18n.language) || languages[0];
 
   return (
     <>
@@ -125,7 +178,7 @@ export const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => {
+            {navLinks.slice(0, 1).map((link) => {
               const isActive = location.pathname === link.path;
               return (
                 <Link
@@ -151,6 +204,99 @@ export const Header = () => {
                 </Link>
               );
             })}
+
+            {/* Genres Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground">
+                  <Grid3X3 className="h-4 w-4" />
+                  Thể loại
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-64 bg-popover p-2">
+                <div className="grid grid-cols-2 gap-1">
+                  {genres.map((genre) => (
+                    <DropdownMenuItem key={genre.slug} asChild>
+                      <Link
+                        to={`/the-loai/${genre.slug}`}
+                        className="flex items-center gap-2 px-3 py-2 rounded-md"
+                      >
+                        <genre.icon className="h-4 w-4 text-primary" />
+                        {genre.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Countries Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground">
+                  <MapPin className="h-4 w-4" />
+                  Quốc gia
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48 bg-popover">
+                {countries.map((country) => (
+                  <DropdownMenuItem key={country.slug} asChild>
+                    <Link
+                      to={`/quoc-gia/${country.slug}`}
+                      className="flex items-center gap-2"
+                    >
+                      <span>{country.flag}</span>
+                      {country.name}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Other nav links */}
+            {navLinks.slice(1).map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
+                    isActive
+                      ? 'text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    <link.icon className="h-4 w-4" />
+                    {t(link.name)}
+                  </span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-indicator"
+                      className="absolute inset-0 bg-primary/10 rounded-lg"
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
+
+            {/* Watch Together */}
+            <Link
+              to="/xem-chung"
+              className={`relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
+                location.pathname === '/xem-chung'
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Xem chung
+              </span>
+            </Link>
           </nav>
 
           {/* Right Actions */}
@@ -176,7 +322,7 @@ export const Header = () => {
                   <Globe className="h-5 w-5 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuContent align="end" className="w-40 bg-popover">
                 {languages.map((lang) => (
                   <DropdownMenuItem
                     key={lang.code}
@@ -217,7 +363,7 @@ export const Header = () => {
                     <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80">
+                <DropdownMenuContent align="end" className="w-80 bg-popover">
                   <DropdownMenuLabel>Thông báo</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <div className="p-4 text-center text-sm text-muted-foreground">
@@ -244,7 +390,7 @@ export const Header = () => {
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 bg-popover">
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium">
@@ -357,32 +503,127 @@ export const Header = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ type: 'spring', bounce: 0.2 }}
-              className="lg:hidden glass mt-3 mx-4 rounded-xl p-4 shadow-xl"
+              className="lg:hidden glass mt-3 mx-4 rounded-xl p-4 shadow-xl max-h-[80vh] overflow-y-auto"
             >
               <div className="flex flex-col gap-1">
-                {navLinks.map((link, index) => {
+                {/* Home */}
+                <Link
+                  to="/"
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+                    location.pathname === '/'
+                      ? 'text-primary bg-primary/10'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                  }`}
+                >
+                  <Home className="h-5 w-5" />
+                  {t('nav.home')}
+                </Link>
+
+                {/* Genres Accordion */}
+                <div>
+                  <button
+                    onClick={() => setMobileGenresOpen(!mobileGenresOpen)}
+                    className="flex items-center justify-between w-full px-4 py-3 rounded-lg font-medium text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  >
+                    <span className="flex items-center gap-3">
+                      <Grid3X3 className="h-5 w-5" />
+                      Thể loại
+                    </span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${mobileGenresOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {mobileGenresOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="grid grid-cols-2 gap-1 pl-4 py-2">
+                          {genres.map((genre) => (
+                            <Link
+                              key={genre.slug}
+                              to={`/the-loai/${genre.slug}`}
+                              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary"
+                            >
+                              <genre.icon className="h-4 w-4 text-primary" />
+                              {genre.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Countries Accordion */}
+                <div>
+                  <button
+                    onClick={() => setMobileCountriesOpen(!mobileCountriesOpen)}
+                    className="flex items-center justify-between w-full px-4 py-3 rounded-lg font-medium text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  >
+                    <span className="flex items-center gap-3">
+                      <MapPin className="h-5 w-5" />
+                      Quốc gia
+                    </span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${mobileCountriesOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {mobileCountriesOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="grid grid-cols-2 gap-1 pl-4 py-2">
+                          {countries.map((country) => (
+                            <Link
+                              key={country.slug}
+                              to={`/quoc-gia/${country.slug}`}
+                              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary"
+                            >
+                              <span>{country.flag}</span>
+                              {country.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Other Nav Links */}
+                {navLinks.slice(1).map((link) => {
                   const isActive = location.pathname === link.path;
                   return (
-                    <motion.div
+                    <Link
                       key={link.path}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
+                      to={link.path}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+                        isActive
+                          ? 'text-primary bg-primary/10'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                      }`}
                     >
-                      <Link
-                        to={link.path}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
-                          isActive
-                            ? 'text-primary bg-primary/10'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                        }`}
-                      >
-                        <link.icon className="h-5 w-5" />
-                        {t(link.name)}
-                      </Link>
-                    </motion.div>
+                      <link.icon className="h-5 w-5" />
+                      {t(link.name)}
+                    </Link>
                   );
                 })}
+
+                {/* Watch Together */}
+                <Link
+                  to="/xem-chung"
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+                    location.pathname === '/xem-chung'
+                      ? 'text-primary bg-primary/10'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                  }`}
+                >
+                  <Users className="h-5 w-5" />
+                  Xem chung
+                </Link>
 
                 {/* Mobile User Actions */}
                 <div className="border-t border-border mt-2 pt-2">
@@ -457,13 +698,11 @@ export const Header = () => {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() =>
-                        changeLanguage(i18n.language === 'vi' ? 'en' : 'vi')
-                      }
+                      onClick={() => changeLanguage(i18n.language === 'vi' ? 'en' : 'vi')}
                       className="flex-1"
                     >
                       <Globe className="h-4 w-4 mr-2" />
-                      {currentLanguage.flag} {currentLanguage.name}
+                      {i18n.language === 'vi' ? 'EN' : 'VI'}
                     </Button>
                   </div>
                 </div>
@@ -472,22 +711,7 @@ export const Header = () => {
           )}
         </AnimatePresence>
       </header>
-
-      {/* Backdrop for mobile menu */}
-      <AnimatePresence>
-        {(isMenuOpen || showSearch) && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 lg:hidden"
-            onClick={() => {
-              setIsMenuOpen(false);
-              setShowSearch(false);
-            }}
-          />
-        )}
-      </AnimatePresence>
+      <div className="h-20" /> {/* Spacer for fixed header */}
     </>
   );
 };

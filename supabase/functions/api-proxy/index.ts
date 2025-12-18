@@ -88,11 +88,12 @@ serve(async (req) => {
       });
     }
 
-    // Validate timestamp (reject stale requests > 30 seconds)
+    // Validate timestamp (reject stale requests > 5 minutes to allow for clock drift)
     if (requestTimestamp) {
       const timestamp = parseInt(requestTimestamp);
       const now = Date.now();
-      if (Math.abs(now - timestamp) > 30000) {
+      // Allow 5 minute window for clock drift between client and server
+      if (Math.abs(now - timestamp) > 300000) {
         console.log('Stale request rejected');
         return new Response(JSON.stringify({ error: 'Request expired' }), {
           status: 400,

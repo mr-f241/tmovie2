@@ -19,10 +19,11 @@ export const QuickFilters = () => {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
-  const { data: countries } = useQuery({
+  const { data: countries = [] } = useQuery({
     queryKey: ['countries'],
     queryFn: fetchCountries,
     staleTime: 30 * 60 * 1000,
+    select: (data) => Array.isArray(data) ? data : [],
   });
 
   const clearFilters = () => {

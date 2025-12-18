@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Youtube, Play } from 'lucide-react';
-import { useYouTubePlayer } from '@/contexts/YouTubePlayerContext';
+import { useNavigate } from 'react-router-dom';
 import type { YouTubeResult } from '@/services/youtube';
 
 interface YouTubeGridProps {
@@ -18,7 +18,11 @@ const YouTubeCardSkeleton = () => (
 );
 
 export const YouTubeGrid = ({ videos, loading, skeletonCount = 12 }: YouTubeGridProps) => {
-  const { playYouTube } = useYouTubePlayer();
+  const navigate = useNavigate();
+
+  const handlePlayVideo = (videoId: string, title: string) => {
+    navigate(`/youtube/watch?v=${videoId}&title=${encodeURIComponent(title)}`);
+  };
 
   if (loading) {
     return (
@@ -48,7 +52,7 @@ export const YouTubeGrid = ({ videos, loading, skeletonCount = 12 }: YouTubeGrid
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.03 }}
           className="group text-left"
-          onClick={() => playYouTube(video.videoId, video.title)}
+          onClick={() => handlePlayVideo(video.videoId, video.title)}
         >
           <div className="relative aspect-video rounded-xl overflow-hidden mb-3">
             <img

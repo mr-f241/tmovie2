@@ -26,7 +26,7 @@ const contactInfo = [
   {
     icon: Phone,
     label: "Zalo",
-    value: "0946855980",
+    value: "Zalo",
     href: "https://zalo.me/0946855980",
   },
   {
@@ -38,7 +38,7 @@ const contactInfo = [
   {
     icon: Send,
     label: "Telegram",
-    value: "@laokay06",
+    value: "Telegram",
     href: "https://t.me/laokay06",
   },
 ];

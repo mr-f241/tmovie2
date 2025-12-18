@@ -19,6 +19,7 @@ interface YouTubeResult {
 
 interface InstantSearchProps {
   onClose?: () => void;
+  initialQuery?: string;
 }
 
 // Fetch YouTube results
@@ -46,8 +47,8 @@ const searchYouTube = async (keyword: string): Promise<YouTubeResult[]> => {
   }
 };
 
-export const InstantSearch = ({ onClose }: InstantSearchProps) => {
-  const [query, setQuery] = useState('');
+export const InstantSearch = ({ onClose, initialQuery }: InstantSearchProps) => {
+  const [query, setQuery] = useState(initialQuery ?? '');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [activeTab, setActiveTab] = useState<'movies' | 'youtube'>('movies');

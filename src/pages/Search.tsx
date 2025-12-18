@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search as SearchIcon, ChevronLeft, ChevronRight, Film, Youtube } from 'lucide-react';
@@ -17,6 +18,10 @@ const Search = () => {
   const page = Number(searchParams.get('page')) || 1;
   const tab = (searchParams.get('tab') as 'movies' | 'youtube') || 'movies';
 
+  // YouTube pagination state (pageToken based)
+  const [youtubePageToken, setYoutubePageToken] = useState<string | undefined>(undefined);
+  const [youtubePageHistory, setYoutubePageHistory] = useState<string[]>([]);
+
   // Movie search
   const { data: movieData, isLoading: isLoadingMovies } = useQuery({
     queryKey: ['search', keyword, page],
@@ -24,15 +29,18 @@ const Search = () => {
     enabled: !!keyword && tab === 'movies',
   });
 
-  // YouTube search
+  // YouTube search with pagination
   const { data: youtubeData, isLoading: isLoadingYouTube } = useQuery({
-    queryKey: ['youtubeSearchPage', keyword, YOUTUBE_PAGE_SIZE],
-    queryFn: () => searchYouTube(keyword, YOUTUBE_PAGE_SIZE),
+    queryKey: ['youtubeSearchPage', keyword, YOUTUBE_PAGE_SIZE, youtubePageToken],
+    queryFn: () => searchYouTube(keyword, YOUTUBE_PAGE_SIZE, youtubePageToken),
     enabled: !!keyword && tab === 'youtube',
   });
 
   const handleTabChange = (newTab: 'movies' | 'youtube') => {
     setSearchParams({ keyword, tab: newTab, page: '1' });
+    // Reset YouTube pagination when changing tabs
+    setYoutubePageToken(undefined);
+    setYoutubePageHistory([]);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -40,9 +48,29 @@ const Search = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleYouTubeNextPage = () => {
+    if (youtubeData?.nextPageToken) {
+      // Save current token to history for going back
+      setYoutubePageHistory((prev) => [...prev, youtubePageToken || '']);
+      setYoutubePageToken(youtubeData.nextPageToken);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleYouTubePrevPage = () => {
+    if (youtubePageHistory.length > 0) {
+      const newHistory = [...youtubePageHistory];
+      const prevToken = newHistory.pop();
+      setYoutubePageHistory(newHistory);
+      setYoutubePageToken(prevToken || undefined);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const totalPages = movieData?.pagination?.totalPages || 1;
   const movieCount = movieData?.pagination?.totalItems || 0;
-  const youtubeCount = youtubeData?.length || 0;
+  const youtubeCount = youtubeData?.totalResults || 0;
+  const currentYouTubePage = youtubePageHistory.length + 1;
 
   return (
     <Layout>
@@ -90,7 +118,7 @@ const Search = () => {
                 YouTube
                 {tab === 'youtube' && youtubeCount > 0 && (
                   <span className="text-xs bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full">
-                    {youtubeCount}
+                    {youtubeCount > 1000 ? '1000+' : youtubeCount}
                   </span>
                 )}
               </button>
@@ -105,7 +133,9 @@ const Search = () => {
                 <p className="text-muted-foreground">{movieCount} phim</p>
               )}
               {tab === 'youtube' && youtubeCount > 0 && (
-                <p className="text-muted-foreground">{youtubeCount} video</p>
+                <p className="text-muted-foreground">
+                  {youtubeCount > 1000 ? '1000+' : youtubeCount} video
+                </p>
               )}
             </div>
 
@@ -142,7 +172,40 @@ const Search = () => {
                 )}
               </>
             ) : (
-              <YouTubeGrid videos={youtubeData || []} loading={isLoadingYouTube} skeletonCount={12} />
+              <>
+                <YouTubeGrid
+                  videos={youtubeData?.items || []}
+                  loading={isLoadingYouTube}
+                  skeletonCount={12}
+                />
+
+                {/* YouTube Pagination */}
+                {(youtubeData?.nextPageToken || youtubePageHistory.length > 0) && (
+                  <div className="flex items-center justify-center gap-2 mt-12">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      disabled={youtubePageHistory.length === 0}
+                      onClick={handleYouTubePrevPage}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+
+                    <span className="px-4 text-sm text-muted-foreground">
+                      Trang {currentYouTubePage}
+                    </span>
+
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      disabled={!youtubeData?.nextPageToken}
+                      onClick={handleYouTubeNextPage}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </section>
         )}

@@ -106,7 +106,7 @@ export const InstantSearch = ({ onClose, initialQuery }: InstantSearchProps) => 
   );
 
   const movieResults = movieData?.items?.slice(0, 5) || [];
-  const youtubeResults: YouTubeResult[] = youtubeData || [];
+  const youtubeResults: YouTubeResult[] = youtubeData?.items || [];
   const isLoading = activeTab === 'movies' ? isLoadingMovies : isLoadingYouTube;
 
   return (

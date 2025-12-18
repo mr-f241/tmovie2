@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Youtube, Play, Loader2 } from 'lucide-react';
+import { Youtube, Play } from 'lucide-react';
 import { useYouTubePlayer } from '@/contexts/YouTubePlayerContext';
 import type { YouTubeResult } from '@/services/youtube';
 

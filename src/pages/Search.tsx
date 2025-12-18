@@ -71,6 +71,11 @@ const Search = () => {
   const movieCount = movieData?.pagination?.totalItems || 0;
   const youtubeCount = youtubeData?.totalResults || 0;
   const currentYouTubePage = youtubePageHistory.length + 1;
+  // YouTube API limits to ~500 results max, so cap total pages
+  const estimatedYouTubeTotalPages = Math.min(
+    Math.ceil(youtubeCount / YOUTUBE_PAGE_SIZE),
+    Math.ceil(500 / YOUTUBE_PAGE_SIZE)
+  );
 
   return (
     <Layout>
@@ -192,7 +197,7 @@ const Search = () => {
                     </Button>
 
                     <span className="px-4 text-sm text-muted-foreground">
-                      Trang {currentYouTubePage}
+                      Trang {currentYouTubePage} / {estimatedYouTubeTotalPages || '?'}
                     </span>
 
                     <Button

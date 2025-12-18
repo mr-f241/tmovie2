@@ -5,8 +5,6 @@ import {
   Search,
   Menu,
   X,
-  Play,
-  Film,
   Tv,
   Clapperboard,
   User,
@@ -36,6 +34,7 @@ import {
   Shirt,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/ui/Logo';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InstantSearch } from '@/components/search/InstantSearch';
 import { useAuth } from '@/contexts/AuthContext';
@@ -156,18 +155,8 @@ export const Header = () => {
       >
         <div className="container flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <motion.div
-              className="relative"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Film className="h-8 w-8 text-primary transition-all duration-300 group-hover:drop-shadow-[0_0_8px_hsl(var(--primary))]" />
-              <Play className="absolute h-3 w-3 text-primary-foreground top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-            </motion.div>
-            <span className="font-display text-2xl font-bold tracking-tight">
-              T<span className="text-primary">Movie</span>
-            </span>
+          <Link to="/">
+            <Logo size="md" />
           </Link>
 
           {/* Desktop Navigation */}

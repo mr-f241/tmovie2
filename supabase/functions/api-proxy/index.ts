@@ -200,12 +200,9 @@ serve(async (req) => {
         .update({ trust_score: Math.max(0, session.trust_score - 5) })
         .eq('session_token', sessionToken);
 
-      // For low trust, return poisoned data instead of error
-      if (session.trust_score < 30) {
-        return new Response(JSON.stringify(generatePoisonedResponse(action)), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
+      // Always respond with 429 when rate-limited.
+      // (Previously low-trust sessions received "poisoned" empty data, which caused false positives
+      // for privacy-focused browsers and broke the app UX.)
 
       return new Response(JSON.stringify({ 
         error: 'Too many requests',
@@ -293,20 +290,9 @@ serve(async (req) => {
     // Normalize response for security
     const normalizedData = normalizeResponse(externalData, action);
 
-    // If trust score is very low, poison the response
-    if (session.trust_score < 20) {
-      console.log('Low trust - returning poisoned data');
-      await supabase.from('security_logs').insert({
-        session_token: sessionToken,
-        event_type: 'poisoned_response',
-        event_data: { action, trust_score: session.trust_score },
-        ip_hash: ipHash,
-      });
-      return new Response(JSON.stringify(generatePoisonedResponse(action)), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
+    // Always return normalized data.
+    // (Previously low-trust sessions received "poisoned" empty data, which caused false positives
+    // for privacy-focused browsers and broke the app UX.)
     return new Response(JSON.stringify(normalizedData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

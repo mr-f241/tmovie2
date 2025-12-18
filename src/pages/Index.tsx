@@ -2,12 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchNewMovies, fetchMoviesByType } from '@/services/api';
 import { Layout } from '@/components/layout/Layout';
 import { HeroSlider } from '@/components/movie/HeroSlider';
-import { DiscoverySection } from '@/components/movie/DiscoverySection';
 import { MovieCarousel } from '@/components/movie/MovieCarousel';
 import { GenreHighlights } from '@/components/movie/GenreHighlights';
-import { FeaturedBanner } from '@/components/movie/FeaturedBanner';
 import { PersonalizedSections } from '@/components/movie/PersonalizedSections';
 import { QuickFilters } from '@/components/movie/QuickFilters';
+import { Top10Section } from '@/components/movie/Top10Section';
+import { ActivityStats } from '@/components/movie/ActivityStats';
+import { ThemedCollection } from '@/components/movie/ThemedCollection';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
@@ -48,16 +49,24 @@ const Index = () => {
       {/* Hero Slider */}
       <HeroSlider movies={newMovies?.items || []} loading={loadingNew} />
 
-      {/* Discovery Section - "What do you want to watch?" */}
-      <DiscoverySection />
-
       {/* Quick Filters */}
       <QuickFilters />
+
+      {/* Activity Stats - Sôi nổi, yêu thích, thể loại hot, bình luận mới */}
+      <ActivityStats />
 
       {/* Personalized Sections for logged-in users */}
       {user && <PersonalizedSections />}
 
-      {/* Featured Carousels */}
+      {/* Top 10 Phim Bộ */}
+      <Top10Section
+        title="Top 10 Phim Bộ Hôm Nay"
+        movies={phimBo?.items || []}
+        loading={loadingPhimBo}
+        viewAllLink="/danh-sach/phim-bo"
+      />
+
+      {/* Phim Mới Cập Nhật */}
       <MovieCarousel
         title="Phim Mới Cập Nhật"
         subtitle="Cập nhật mới nhất hàng ngày"
@@ -69,6 +78,23 @@ const Index = () => {
       {/* Genre Highlights */}
       <GenreHighlights />
 
+      {/* Top 10 Phim Lẻ */}
+      <Top10Section
+        title="Top 10 Phim Lẻ Hôm Nay"
+        movies={phimLe?.items || []}
+        loading={loadingPhimLe}
+        viewAllLink="/danh-sach/phim-le"
+      />
+
+      {/* Themed Collections */}
+      <ThemedCollection
+        title="Kho Tàng Anime Mới Nhất"
+        movies={hoatHinh?.items || []}
+        loading={loadingHoatHinh}
+        viewAllLink="/danh-sach/hoat-hinh"
+        featured
+      />
+
       <MovieCarousel
         title="Phim Bộ Hot"
         subtitle="Series phim được yêu thích nhất"
@@ -77,23 +103,11 @@ const Index = () => {
         viewAllLink="/danh-sach/phim-bo"
       />
 
-      {/* Featured Banners */}
-      <FeaturedBanner />
-
-      <MovieCarousel
-        title="Phim Lẻ Hay"
-        subtitle="Bộ sưu tập phim điện ảnh chất lượng"
+      <ThemedCollection
+        title="Phim Điện Ảnh Mới Công Chiếu"
         movies={phimLe?.items || []}
         loading={loadingPhimLe}
         viewAllLink="/danh-sach/phim-le"
-      />
-
-      <MovieCarousel
-        title="Hoạt Hình"
-        subtitle="Animation & Anime cho mọi lứa tuổi"
-        movies={hoatHinh?.items || []}
-        loading={loadingHoatHinh}
-        viewAllLink="/danh-sach/hoat-hinh"
       />
 
       <MovieCarousel

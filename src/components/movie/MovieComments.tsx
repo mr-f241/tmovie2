@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Send, Trash2, MoreVertical, Edit2, Smile, ImagePlus, X } from 'lucide-react';
+import { MessageCircle, Send, Trash2, MoreVertical, Edit2, Smile, ImagePlus, X, Reply, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/hooks/useAuthModal';
@@ -33,20 +33,25 @@ interface Comment {
     username: string | null;
     avatar_url: string | null;
   };
+  replies?: Comment[];
 }
 
 export const MovieComments = ({ movieSlug, episodeSlug }: MovieCommentsProps) => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { openLogin } = useAuthModal();
   const queryClient = useQueryClient();
   const [content, setContent] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
+  const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
+  const [replyContent, setReplyContent] = useState('');
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const replyInputRef = useRef<HTMLTextAreaElement>(null);
 
   const commentKey = episodeSlug ? `${movieSlug}-${episodeSlug}` : movieSlug;
 
@@ -73,10 +78,35 @@ export const MovieComments = ({ movieSlug, episodeSlug }: MovieCommentsProps) =>
         (profilesData || []).map(p => [p.user_id, p])
       );
 
-      return commentsData.map(comment => ({
+      const commentsWithProfiles = commentsData.map(comment => ({
         ...comment,
         profile: profilesMap.get(comment.user_id) || null
       })) as Comment[];
+
+      // Organize into threads
+      const parentComments: Comment[] = [];
+      const repliesMap = new Map<string, Comment[]>();
+
+      commentsWithProfiles.forEach(comment => {
+        if (comment.parent_id) {
+          const replies = repliesMap.get(comment.parent_id) || [];
+          replies.push(comment);
+          repliesMap.set(comment.parent_id, replies);
+        } else {
+          parentComments.push(comment);
+        }
+      });
+
+      // Sort replies by created_at ascending
+      repliesMap.forEach(replies => {
+        replies.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      });
+
+      // Attach replies to parent comments
+      return parentComments.map(parent => ({
+        ...parent,
+        replies: repliesMap.get(parent.id) || []
+      }));
     },
   });
 
@@ -106,10 +136,10 @@ export const MovieComments = ({ movieSlug, episodeSlug }: MovieCommentsProps) =>
   };
 
   const addCommentMutation = useMutation({
-    mutationFn: async (newContent: string) => {
+    mutationFn: async ({ content: newContent, parentId }: { content: string; parentId?: string }) => {
       setIsUploading(true);
       try {
-        const imageUrls = await uploadImages();
+        const imageUrls = parentId ? [] : await uploadImages();
         let finalContent = newContent;
         
         if (imageUrls.length > 0) {
@@ -120,18 +150,26 @@ export const MovieComments = ({ movieSlug, episodeSlug }: MovieCommentsProps) =>
           movie_slug: commentKey,
           content: finalContent,
           user_id: user!.id,
+          parent_id: parentId || null,
         });
         if (error) throw error;
       } finally {
         setIsUploading(false);
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['comments', commentKey] });
-      setContent('');
-      setSelectedImages([]);
-      setImagePreviews([]);
-      toast.success('Đã gửi bình luận');
+      if (variables.parentId) {
+        setReplyContent('');
+        setReplyingTo(null);
+        setExpandedReplies(prev => new Set(prev).add(variables.parentId!));
+        toast.success('Đã gửi trả lời');
+      } else {
+        setContent('');
+        setSelectedImages([]);
+        setImagePreviews([]);
+        toast.success('Đã gửi bình luận');
+      }
     },
     onError: () => toast.error('Lỗi khi gửi bình luận'),
   });
@@ -176,13 +214,28 @@ export const MovieComments = ({ movieSlug, episodeSlug }: MovieCommentsProps) =>
       return;
     }
     if (content.trim() || selectedImages.length > 0) {
-      addCommentMutation.mutate(content.trim());
+      addCommentMutation.mutate({ content: content.trim() });
     }
   };
 
-  const handleEmojiSelect = (emoji: { native: string }) => {
-    setContent(prev => prev + emoji.native);
-    textareaRef.current?.focus();
+  const handleReplySubmit = (parentId: string) => {
+    if (!user) {
+      openLogin();
+      return;
+    }
+    if (replyContent.trim()) {
+      addCommentMutation.mutate({ content: replyContent.trim(), parentId });
+    }
+  };
+
+  const handleEmojiSelect = (emoji: { native: string }, isReply: boolean = false) => {
+    if (isReply) {
+      setReplyContent(prev => prev + emoji.native);
+      replyInputRef.current?.focus();
+    } else {
+      setContent(prev => prev + emoji.native);
+      textareaRef.current?.focus();
+    }
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -218,6 +271,18 @@ export const MovieComments = ({ movieSlug, episodeSlug }: MovieCommentsProps) =>
   const removeImage = (index: number) => {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const toggleReplies = (commentId: string) => {
+    setExpandedReplies(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(commentId)) {
+        newSet.delete(commentId);
+      } else {
+        newSet.add(commentId);
+      }
+      return newSet;
+    });
   };
 
   const formatTime = (dateStr: string) => {
@@ -261,12 +326,212 @@ export const MovieComments = ({ movieSlug, episodeSlug }: MovieCommentsProps) =>
     return parts;
   };
 
+  const totalComments = comments.reduce((acc, c) => acc + 1 + (c.replies?.length || 0), 0);
+
+  const CommentItem = ({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className={`${isReply ? 'ml-8 sm:ml-12 mt-3' : 'glass-card rounded-xl p-3 sm:p-4'}`}
+    >
+      <div className={`flex gap-2 sm:gap-3 ${isReply ? 'bg-secondary/20 rounded-lg p-2 sm:p-3' : ''}`}>
+        <Avatar className={`${isReply ? 'h-7 w-7 sm:h-8 sm:w-8' : 'h-8 w-8 sm:h-10 sm:w-10'} flex-shrink-0`}>
+          <AvatarImage src={comment.profile?.avatar_url || undefined} />
+          <AvatarFallback className="bg-primary/10 text-xs sm:text-sm">
+            {(comment.profile?.display_name || 'U')[0].toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start sm:items-center justify-between gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
+              <span className={`font-medium ${isReply ? 'text-xs sm:text-sm' : 'text-sm sm:text-base'} truncate max-w-[120px] sm:max-w-none`}>
+                {comment.profile?.display_name || comment.profile?.username || 'Người dùng'}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {formatTime(comment.created_at)}
+                {comment.is_edited && ' (đã sửa)'}
+              </span>
+            </div>
+            {user?.id === comment.user_id && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0">
+                    <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-popover">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setEditingId(comment.id);
+                      setEditContent(comment.content);
+                    }}
+                  >
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Chỉnh sửa
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-destructive"
+                    onClick={() => deleteCommentMutation.mutate(comment.id)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Xóa
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+          {editingId === comment.id ? (
+            <div className="mt-2 space-y-2">
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="min-h-[60px] bg-secondary/30 text-sm"
+              />
+              <div className="flex gap-2 justify-end">
+                <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>
+                  Hủy
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => updateCommentMutation.mutate({ id: comment.id, content: editContent })}
+                  disabled={updateCommentMutation.isPending}
+                >
+                  Lưu
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className={`mt-1 ${isReply ? 'text-xs sm:text-sm' : 'text-sm sm:text-base'} text-muted-foreground whitespace-pre-wrap break-words`}>
+                {renderContent(comment.content)}
+              </div>
+              {!isReply && user && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-2 h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    setReplyingTo(comment);
+                    setReplyContent('');
+                    setTimeout(() => replyInputRef.current?.focus(), 100);
+                  }}
+                >
+                  <Reply className="h-3 w-3 mr-1" />
+                  Trả lời
+                </Button>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Reply Form */}
+      {replyingTo?.id === comment.id && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="mt-3 ml-8 sm:ml-12"
+        >
+          <div className="flex gap-2">
+            <Avatar className="h-7 w-7 flex-shrink-0">
+              <AvatarImage src={user?.user_metadata?.avatar_url} />
+              <AvatarFallback className="bg-primary/10 text-xs">
+                {user?.email?.[0].toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-2">
+              <Textarea
+                ref={replyInputRef}
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                placeholder={`Trả lời ${comment.profile?.display_name || 'người dùng'}...`}
+                className="min-h-[60px] bg-secondary/30 text-sm"
+              />
+              <div className="flex items-center justify-between">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground">
+                      <Smile className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 border-0" align="start">
+                    <Picker
+                      data={data}
+                      onEmojiSelect={(emoji: { native: string }) => handleEmojiSelect(emoji, true)}
+                      theme="dark"
+                      locale="vi"
+                      previewPosition="none"
+                      skinTonePosition="none"
+                      perLine={8}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => setReplyingTo(null)}>
+                    Hủy
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleReplySubmit(comment.id)}
+                    disabled={!replyContent.trim() || addCommentMutation.isPending}
+                  >
+                    <Send className="h-3 w-3 mr-1" />
+                    Gửi
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Replies */}
+      {!isReply && comment.replies && comment.replies.length > 0 && (
+        <div className="mt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-primary hover:text-primary/80"
+            onClick={() => toggleReplies(comment.id)}
+          >
+            {expandedReplies.has(comment.id) ? (
+              <>
+                <ChevronUp className="h-3 w-3 mr-1" />
+                Ẩn {comment.replies.length} trả lời
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-3 w-3 mr-1" />
+                Xem {comment.replies.length} trả lời
+              </>
+            )}
+          </Button>
+          <AnimatePresence>
+            {expandedReplies.has(comment.id) && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                {comment.replies.map(reply => (
+                  <CommentItem key={reply.id} comment={reply} isReply />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+    </motion.div>
+  );
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center gap-2">
         <MessageCircle className="h-5 w-5 text-primary" />
         <h3 className="font-display text-base sm:text-lg font-semibold">
-          Bình luận ({comments.length})
+          Bình luận ({totalComments})
         </h3>
       </div>
 
@@ -323,7 +588,7 @@ export const MovieComments = ({ movieSlug, episodeSlug }: MovieCommentsProps) =>
                   <PopoverContent className="w-auto p-0 border-0" align="start">
                     <Picker
                       data={data}
-                      onEmojiSelect={handleEmojiSelect}
+                      onEmojiSelect={(emoji: { native: string }) => handleEmojiSelect(emoji)}
                       theme="dark"
                       locale="vi"
                       previewPosition="none"
@@ -388,91 +653,7 @@ export const MovieComments = ({ movieSlug, episodeSlug }: MovieCommentsProps) =>
         ) : (
           <AnimatePresence>
             {comments.map((comment) => (
-              <motion.div
-                key={comment.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="glass-card rounded-xl p-3 sm:p-4"
-              >
-                <div className="flex gap-2 sm:gap-3">
-                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
-                    <AvatarImage src={comment.profile?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-primary/10 text-xs sm:text-sm">
-                      {(comment.profile?.display_name || 'U')[0].toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start sm:items-center justify-between gap-2">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
-                        <span className="font-medium text-sm sm:text-base truncate max-w-[120px] sm:max-w-none">
-                          {comment.profile?.display_name || comment.profile?.username || 'Người dùng'}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatTime(comment.created_at)}
-                          {comment.is_edited && ' (đã sửa)'}
-                        </span>
-                      </div>
-                      {user?.id === comment.user_id && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-popover">
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setEditingId(comment.id);
-                                setEditContent(comment.content);
-                              }}
-                            >
-                              <Edit2 className="h-4 w-4 mr-2" />
-                              Chỉnh sửa
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-destructive"
-                              onClick={() => deleteCommentMutation.mutate(comment.id)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Xóa
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </div>
-                    {editingId === comment.id ? (
-                      <div className="mt-2 space-y-2">
-                        <Textarea
-                          value={editContent}
-                          onChange={(e) => setEditContent(e.target.value)}
-                          className="min-h-[60px] bg-secondary/30 text-sm"
-                        />
-                        <div className="flex gap-2 justify-end">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setEditingId(null)}
-                          >
-                            Hủy
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => updateCommentMutation.mutate({ id: comment.id, content: editContent })}
-                            disabled={updateCommentMutation.isPending}
-                          >
-                            Lưu
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="mt-1 text-sm sm:text-base text-muted-foreground whitespace-pre-wrap break-words">
-                        {renderContent(comment.content)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
+              <CommentItem key={comment.id} comment={comment} />
             ))}
           </AnimatePresence>
         )}

@@ -1,46 +1,46 @@
-import { useQuery } from '@tanstack/react-query';
-import { fetchNewMovies, fetchMoviesByType } from '@/services/api';
-import { Layout } from '@/components/layout/Layout';
-import { HeroSlider } from '@/components/movie/HeroSlider';
-import { MovieCarousel } from '@/components/movie/MovieCarousel';
-import { GenreHighlights } from '@/components/movie/GenreHighlights';
-import { PersonalizedSections } from '@/components/movie/PersonalizedSections';
-import { QuickFilters } from '@/components/movie/QuickFilters';
-import { Top10Section } from '@/components/movie/Top10Section';
-import { ActivityStats } from '@/components/movie/ActivityStats';
-import { ThemedCollection } from '@/components/movie/ThemedCollection';
-import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from "@tanstack/react-query";
+import { fetchNewMovies, fetchMoviesByType } from "@/services/api";
+import { Layout } from "@/components/layout/Layout";
+import { HeroSlider } from "@/components/movie/HeroSlider";
+import { MovieCarousel } from "@/components/movie/MovieCarousel";
+import { GenreHighlights } from "@/components/movie/GenreHighlights";
+import { PersonalizedSections } from "@/components/movie/PersonalizedSections";
+import { QuickFilters } from "@/components/movie/QuickFilters";
+import { Top10Section } from "@/components/movie/Top10Section";
+import { ActivityStats } from "@/components/movie/ActivityStats";
+import { ThemedCollection } from "@/components/movie/ThemedCollection";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const { user } = useAuth();
 
   const { data: newMovies, isLoading: loadingNew } = useQuery({
-    queryKey: ['newMovies'],
+    queryKey: ["newMovies"],
     queryFn: () => fetchNewMovies(1),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: phimBo, isLoading: loadingPhimBo } = useQuery({
-    queryKey: ['phimBo'],
-    queryFn: () => fetchMoviesByType('phim-bo', 1),
+    queryKey: ["phimBo"],
+    queryFn: () => fetchMoviesByType("phim-bo", 1),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: phimLe, isLoading: loadingPhimLe } = useQuery({
-    queryKey: ['phimLe'],
-    queryFn: () => fetchMoviesByType('phim-le', 1),
+    queryKey: ["phimLe"],
+    queryFn: () => fetchMoviesByType("phim-le", 1),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: hoatHinh, isLoading: loadingHoatHinh } = useQuery({
-    queryKey: ['hoatHinh'],
-    queryFn: () => fetchMoviesByType('hoat-hinh', 1),
+    queryKey: ["hoatHinh"],
+    queryFn: () => fetchMoviesByType("hoat-hinh", 1),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: tvShows, isLoading: loadingTvShows } = useQuery({
-    queryKey: ['tvShows'],
-    queryFn: () => fetchMoviesByType('tv-shows', 1),
+    queryKey: ["tvShows"],
+    queryFn: () => fetchMoviesByType("tv-shows", 1),
     staleTime: 5 * 60 * 1000,
   });
 

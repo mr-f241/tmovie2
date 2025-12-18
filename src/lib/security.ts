@@ -239,33 +239,53 @@ class SecurityClient {
     }
   }
 
-  async request<T>(action: string, params?: Record<string, any>): Promise<T> {
+  async request<T>(action: string, params?: Record<string, any>, _retry = 0): Promise<T> {
     await this.init();
 
     if (!this.session) {
       throw new Error('No active session');
     }
 
-    const routeToken = this.session.routeTokens[action] || this.session.routeTokens['movies'];
+    const routeToken = this.session.routeTokens[action];
     const timestamp = Date.now();
     const nonce = Math.random().toString(36).substring(2, 15);
 
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'X-Session-Token': this.session.sessionToken,
+      'X-Request-Timestamp': String(timestamp),
+      'X-Request-Nonce': nonce,
+    };
+
+    // Only send a route token if we actually have one for this action.
+    // (Avoids trust penalties from sending a mismatched fallback token.)
+    if (routeToken) {
+      headers['X-Route-Token'] = routeToken;
+    }
+
     const response = await fetch(`${SUPABASE_URL}/functions/v1/api-proxy`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Session-Token': this.session.sessionToken,
-        'X-Route-Token': routeToken,
-        'X-Request-Timestamp': String(timestamp),
-        'X-Request-Nonce': nonce,
-      },
+      headers,
       body: JSON.stringify({ action, params }),
     });
 
     if (response.status === 401) {
       // Session expired, recreate and retry
       await this.createSession();
-      return this.request(action, params);
+      return this.request(action, params, _retry);
+    }
+
+    // If the backend rejects due to timestamp drift, recreate the session and retry once.
+    if (response.status === 400 && _retry < 1) {
+      try {
+        const body = await response.clone().json();
+        if (body?.error === 'Request expired') {
+          await this.createSession();
+          return this.request(action, params, _retry + 1);
+        }
+      } catch {
+        // ignore JSON parse failures
+      }
     }
 
     if (response.status === 429) {
@@ -279,6 +299,7 @@ class SecurityClient {
 
     return response.json();
   }
+
 
   getSessionToken(): string | null {
     return this.session?.sessionToken || null;

@@ -141,10 +141,6 @@ const Watch = () => {
             episodeName={currentEpisode.name}
             onProgress={handleProgress}
             onEnded={handleEnded}
-            onPrevEpisode={prevEpisode ? () => setSearchParams({ tap: prevEpisode.slug }) : undefined}
-            onNextEpisode={nextEpisode ? () => setSearchParams({ tap: nextEpisode.slug }) : undefined}
-            hasPrev={!!prevEpisode}
-            hasNext={!!nextEpisode}
           />
         </div>
       </div>

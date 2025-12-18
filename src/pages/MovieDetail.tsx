@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Play, Calendar, Clock, Globe, Film, Users, Star, Share2, Heart } from 'lucide-react';
+import { Play, Calendar, Clock, Globe, Film, Users, Heart, Share2, Star, Bookmark } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fetchMovieDetail, getImageUrl, fetchMoviesByType } from '@/services/api';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useWatchHistory } from '@/hooks/useWatchHistory';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MovieSection } from '@/components/movie/MovieSection';
+import { toast } from 'sonner';
 
 const MovieDetail = () => {
   const { slug } = useParams();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { getResumeInfo } = useWatchHistory();
 
   const { data: movie, isLoading } = useQuery({
     queryKey: ['movie', slug],
@@ -28,6 +33,34 @@ const MovieDetail = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [slug]);
+
+  const resumeInfo = movie ? getResumeInfo(movie.slug) : null;
+  const isMovieFavorite = movie ? isFavorite(movie.slug) : false;
+
+  const handleFavoriteToggle = () => {
+    if (!movie) return;
+    const added = toggleFavorite({
+      slug: movie.slug,
+      name: movie.name,
+      posterUrl: getImageUrl(movie.poster_url),
+      originName: movie.origin_name,
+      year: movie.year,
+    });
+    toast.success(added ? 'Đã thêm vào yêu thích' : 'Đã xóa khỏi yêu thích');
+  };
+
+  const handleShare = async () => {
+    if (navigator.share && movie) {
+      await navigator.share({
+        title: movie.name,
+        text: `Xem ${movie.name} tại TMovie`,
+        url: window.location.href,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Đã sao chép link');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -54,7 +87,7 @@ const MovieDetail = () => {
       <Layout>
         <div className="container py-20 text-center">
           <h1 className="font-display text-3xl font-bold mb-4">Không tìm thấy phim</h1>
-          <p className="text-muted-foreground mb-8">Phim bạn tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+          <p className="text-muted-foreground mb-8">Phim bạn tìm kiếm không tồn tại.</p>
           <Button asChild>
             <Link to="/">Về trang chủ</Link>
           </Button>
@@ -66,30 +99,41 @@ const MovieDetail = () => {
   const backdropUrl = getImageUrl(movie.thumb_url || movie.poster_url);
   const posterUrl = getImageUrl(movie.poster_url);
   const firstEpisode = movie.episodes?.[0]?.server_data?.[0];
+  const watchUrl = resumeInfo 
+    ? `/xem-phim/${movie.slug}?tap=${resumeInfo.episodeSlug}`
+    : `/xem-phim/${movie.slug}`;
 
   return (
     <Layout>
       {/* Hero Backdrop */}
-      <div className="relative min-h-[50vh] md:min-h-[60vh]">
-        <div
+      <div className="relative min-h-[55vh] md:min-h-[65vh]">
+        <motion.div
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.5, ease: 'easeOut' }}
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${backdropUrl})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-background/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-background/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50" />
       </div>
 
       {/* Content */}
-      <div className="container relative -mt-48 md:-mt-64 pb-8">
+      <div className="container relative -mt-52 md:-mt-72 pb-8">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="grid md:grid-cols-[280px_1fr] lg:grid-cols-[300px_1fr] gap-6 md:gap-8"
+          transition={{ duration: 0.6 }}
+          className="grid md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] gap-6 md:gap-10"
         >
           {/* Poster */}
           <div className="flex flex-col gap-4">
-            <div className="aspect-[2/3] rounded-xl overflow-hidden card-shadow">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="aspect-[2/3] rounded-2xl overflow-hidden card-shadow ring-1 ring-border/20"
+            >
               <img
                 src={posterUrl}
                 alt={movie.name}
@@ -98,15 +142,15 @@ const MovieDetail = () => {
                   (e.target as HTMLImageElement).src = '/placeholder.svg';
                 }}
               />
-            </div>
+            </motion.div>
 
-            {/* Watch Button - Mobile */}
-            <div className="md:hidden">
+            {/* Mobile Actions */}
+            <div className="md:hidden flex gap-2">
               {firstEpisode && (
-                <Button asChild size="lg" className="w-full gradient-primary border-0 glow">
-                  <Link to={`/xem-phim/${movie.slug}`}>
+                <Button asChild size="lg" className="flex-1 gradient-primary border-0 glow">
+                  <Link to={watchUrl}>
                     <Play className="mr-2 h-5 w-5 fill-current" />
-                    Xem phim
+                    {resumeInfo ? 'Tiếp tục xem' : 'Xem phim'}
                   </Link>
                 </Button>
               )}
@@ -116,52 +160,71 @@ const MovieDetail = () => {
           {/* Info */}
           <div className="space-y-6">
             {/* Badges */}
-            <div className="flex flex-wrap items-center gap-2">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-wrap items-center gap-2"
+            >
               {movie.quality && (
                 <Badge className="gradient-primary border-0">{movie.quality}</Badge>
               )}
               {movie.lang && <Badge variant="secondary">{movie.lang}</Badge>}
               {movie.status && <Badge variant="outline">{movie.status}</Badge>}
-            </div>
+            </motion.div>
 
             {/* Title */}
-            <div>
-              <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
                 {movie.name}
               </h1>
               <p className="text-lg text-muted-foreground mt-2">{movie.origin_name}</p>
-            </div>
+            </motion.div>
 
             {/* Meta Info */}
-            <div className="flex flex-wrap gap-4 text-sm">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="flex flex-wrap gap-5 text-sm"
+            >
               {movie.year && (
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="h-4 w-4 text-primary" />
                   <span>{movie.year}</span>
                 </div>
               )}
               {movie.time && (
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock className="h-4 w-4" />
+                  <Clock className="h-4 w-4 text-primary" />
                   <span>{movie.time}</span>
                 </div>
               )}
               {movie.episode_total && (
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Film className="h-4 w-4" />
+                  <Film className="h-4 w-4 text-primary" />
                   <span>{movie.episode_current} / {movie.episode_total}</span>
                 </div>
               )}
               {movie.view && (
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Users className="h-4 w-4" />
+                  <Users className="h-4 w-4 text-primary" />
                   <span>{movie.view.toLocaleString()} lượt xem</span>
                 </div>
               )}
-            </div>
+            </motion.div>
 
             {/* Categories & Countries */}
-            <div className="flex flex-wrap gap-2">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="flex flex-wrap gap-2"
+            >
               {movie.category?.map((cat) => (
                 <Link key={cat.slug} to={`/the-loai/${cat.slug}`}>
                   <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
@@ -177,41 +240,60 @@ const MovieDetail = () => {
                   </Badge>
                 </Link>
               ))}
-            </div>
+            </motion.div>
 
-            {/* Actions */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* Desktop Actions */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="hidden md:flex items-center gap-3"
+            >
               {firstEpisode && (
-                <Button asChild size="lg" className="gradient-primary border-0 glow">
-                  <Link to={`/xem-phim/${movie.slug}`}>
-                    <Play className="mr-2 h-5 w-5 fill-current" />
-                    Xem phim
+                <Button asChild size="lg" className="gradient-primary border-0 glow group">
+                  <Link to={watchUrl}>
+                    <Play className="mr-2 h-5 w-5 fill-current group-hover:scale-110 transition-transform" />
+                    {resumeInfo ? `Tiếp tục xem (${resumeInfo.progress}%)` : 'Xem phim'}
                   </Link>
                 </Button>
               )}
-              <Button variant="secondary" size="lg">
-                <Heart className="mr-2 h-5 w-5" />
-                Yêu thích
+              <Button 
+                variant={isMovieFavorite ? 'default' : 'secondary'} 
+                size="lg"
+                onClick={handleFavoriteToggle}
+                className={isMovieFavorite ? 'bg-pink-600 hover:bg-pink-700' : ''}
+              >
+                <Heart className={`mr-2 h-5 w-5 ${isMovieFavorite ? 'fill-current' : ''}`} />
+                {isMovieFavorite ? 'Đã thích' : 'Yêu thích'}
               </Button>
-              <Button variant="secondary" size="icon" className="h-11 w-11">
+              <Button variant="secondary" size="icon" className="h-11 w-11" onClick={handleShare}>
                 <Share2 className="h-5 w-5" />
               </Button>
-            </div>
+            </motion.div>
 
             {/* Description */}
             {movie.content && (
-              <div>
-                <h3 className="font-display font-semibold text-lg mb-2">Nội dung phim</h3>
-                <p
-                  className="text-muted-foreground leading-relaxed"
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+              >
+                <h3 className="font-display font-semibold text-lg mb-3">Nội dung phim</h3>
+                <div
+                  className="text-muted-foreground leading-relaxed prose prose-invert prose-sm max-w-none"
                   dangerouslySetInnerHTML={{ __html: movie.content }}
                 />
-              </div>
+              </motion.div>
             )}
 
             {/* Cast & Director */}
             {(movie.actor?.length > 0 || movie.director?.length > 0) && (
-              <div className="grid sm:grid-cols-2 gap-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.9 }}
+                className="grid sm:grid-cols-2 gap-4"
+              >
                 {movie.director?.length > 0 && (
                   <div>
                     <h4 className="font-semibold text-sm text-muted-foreground mb-2">Đạo diễn</h4>
@@ -224,26 +306,37 @@ const MovieDetail = () => {
                     <p className="text-sm line-clamp-3">{movie.actor.join(', ')}</p>
                   </div>
                 )}
-              </div>
+              </motion.div>
             )}
 
             {/* Episodes */}
             {movie.episodes?.length > 0 && movie.episodes[0].server_data?.length > 1 && (
-              <div>
-                <h3 className="font-display font-semibold text-lg mb-3">Danh sách tập</h3>
-                <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto scrollbar-hide">
-                  {movie.episodes[0].server_data.map((ep, index) => (
-                    <Link
-                      key={ep.slug}
-                      to={`/xem-phim/${movie.slug}?tap=${ep.slug}`}
-                    >
-                      <Button variant="secondary" size="sm" className="min-w-[60px]">
-                        {ep.name}
-                      </Button>
-                    </Link>
-                  ))}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+              >
+                <h3 className="font-display font-semibold text-lg mb-4">Danh sách tập</h3>
+                <div className="flex flex-wrap gap-2 max-h-52 overflow-y-auto scrollbar-hide p-1">
+                  {movie.episodes[0].server_data.map((ep) => {
+                    const isResume = resumeInfo?.episodeSlug === ep.slug;
+                    return (
+                      <Link
+                        key={ep.slug}
+                        to={`/xem-phim/${movie.slug}?tap=${ep.slug}`}
+                      >
+                        <Button 
+                          variant={isResume ? 'default' : 'secondary'} 
+                          size="sm" 
+                          className={`min-w-[65px] ${isResume ? 'gradient-primary border-0' : ''}`}
+                        >
+                          {ep.name}
+                        </Button>
+                      </Link>
+                    );
+                  })}
                 </div>
-              </div>
+              </motion.div>
             )}
           </div>
         </motion.div>

@@ -8,7 +8,6 @@ import { searchYouTube, type YouTubeResult } from '@/services/youtube';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { rateLimit } from '@/lib/crypto';
-import { useYouTubePlayer } from '@/contexts/YouTubePlayerContext';
 
 interface InstantSearchProps {
   onClose?: () => void;
@@ -19,7 +18,6 @@ const YOUTUBE_PREVIEW_COUNT = 5;
 
 export const InstantSearch = ({ onClose, initialQuery }: InstantSearchProps) => {
   const navigate = useNavigate();
-  const { playYouTube } = useYouTubePlayer();
 
   const [query, setQuery] = useState(initialQuery ?? '');
   const [debouncedQuery, setDebouncedQuery] = useState(
@@ -103,12 +101,12 @@ export const InstantSearch = ({ onClose, initialQuery }: InstantSearchProps) => 
 
   const handleSelectYouTube = useCallback(
     (videoId: string, title: string) => {
-      playYouTube(videoId, title);
+      navigate(`/youtube/watch?v=${videoId}&title=${encodeURIComponent(title)}`);
       setShowResults(false);
       setQuery('');
       onClose?.();
     },
-    [playYouTube, onClose]
+    [navigate, onClose]
   );
 
   const movieResults = movieData?.items?.slice(0, 5) || [];

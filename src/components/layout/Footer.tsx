@@ -1,45 +1,45 @@
-import { Link } from 'react-router-dom';
-import { Film, Play, Facebook, Mail, Phone, Send } from 'lucide-react';
+import { Link } from "react-router-dom";
+import { Film, Play, Facebook, Mail, Phone, Send } from "lucide-react";
 
 const footerLinks = {
-  'Thể loại': [
-    { name: 'Hành Động', path: '/the-loai/hanh-dong' },
-    { name: 'Tình Cảm', path: '/the-loai/tinh-cam' },
-    { name: 'Kinh Dị', path: '/the-loai/kinh-di' },
-    { name: 'Hài Hước', path: '/the-loai/hai-huoc' },
+  "Thể loại": [
+    { name: "Hành Động", path: "/the-loai/hanh-dong" },
+    { name: "Tình Cảm", path: "/the-loai/tinh-cam" },
+    { name: "Kinh Dị", path: "/the-loai/kinh-di" },
+    { name: "Hài Hước", path: "/the-loai/hai-huoc" },
   ],
-  'Quốc gia': [
-    { name: 'Việt Nam', path: '/quoc-gia/viet-nam' },
-    { name: 'Hàn Quốc', path: '/quoc-gia/han-quoc' },
-    { name: 'Trung Quốc', path: '/quoc-gia/trung-quoc' },
-    { name: 'Mỹ', path: '/quoc-gia/au-my' },
+  "Quốc gia": [
+    { name: "Việt Nam", path: "/quoc-gia/viet-nam" },
+    { name: "Hàn Quốc", path: "/quoc-gia/han-quoc" },
+    { name: "Trung Quốc", path: "/quoc-gia/trung-quoc" },
+    { name: "Mỹ", path: "/quoc-gia/au-my" },
   ],
 };
 
 const contactInfo = [
-  { 
-    icon: Mail, 
-    label: 'Email', 
-    value: 'thanhhoccode06@gmail.com',
-    href: 'mailto:thanhhoccode06@gmail.com'
+  {
+    icon: Mail,
+    label: "Email",
+    value: "thanhhoccode06@gmail.com",
+    href: "mailto:thanhhoccode06@gmail.com",
   },
-  { 
-    icon: Phone, 
-    label: 'Zalo', 
-    value: '0946855980',
-    href: 'https://zalo.me/0946855980'
+  {
+    icon: Phone,
+    label: "Zalo",
+    value: "Zalo",
+    href: "https://zalo.me/0946855980",
   },
-  { 
-    icon: Facebook, 
-    label: 'Facebook', 
-    value: 'Facebook',
-    href: 'https://www.facebook.com/profile.php?id=100015684885472'
+  {
+    icon: Facebook,
+    label: "Facebook",
+    value: "Facebook",
+    href: "https://www.facebook.com/profile.php?id=100015684885472",
   },
-  { 
-    icon: Send, 
-    label: 'Telegram', 
-    value: '@laokay06',
-    href: 'https://t.me/laokay06'
+  {
+    icon: Send,
+    label: "Telegram",
+    value: "Telegram",
+    href: "https://t.me/laokay06",
   },
 ];
 
@@ -71,10 +71,7 @@ export const Footer = () => {
               <ul className="space-y-2">
                 {links.map((link) => (
                   <li key={link.path}>
-                    <Link
-                      to={link.path}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                    >
+                    <Link to={link.path} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                       {link.name}
                     </Link>
                   </li>

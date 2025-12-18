@@ -20,13 +20,13 @@ const contactInfo = [
   {
     icon: Mail,
     label: "Email",
-    value: "thanhhoccode06@gmail.com",
+    value: "Email",
     href: "mailto:thanhhoccode06@gmail.com",
   },
   {
     icon: Phone,
     label: "Zalo",
-    value: "Zalo",
+    value: "0946855980",
     href: "https://zalo.me/0946855980",
   },
   {
@@ -38,7 +38,7 @@ const contactInfo = [
   {
     icon: Send,
     label: "Telegram",
-    value: "Telegram",
+    value: "@laokay06",
     href: "https://t.me/laokay06",
   },
 ];

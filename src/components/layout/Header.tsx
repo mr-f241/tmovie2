@@ -32,6 +32,7 @@ import {
   GraduationCap,
   Music,
   Shirt,
+  Shield,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/Logo';
@@ -40,6 +41,7 @@ import { InstantSearch } from '@/components/search/InstantSearch';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuthModal } from '@/hooks/useAuthModal';
+import { useAdmin } from '@/hooks/useAdmin';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -103,6 +105,7 @@ export const Header = () => {
   const { user, profile, signOut } = useAuth();
   const { resolvedTheme, setTheme } = useTheme();
   const { openLogin } = useAuthModal();
+  const { isAdmin } = useAdmin();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -382,6 +385,14 @@ export const Header = () => {
                       Cài đặt
                     </Link>
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="flex items-center gap-2 text-primary">
+                        <Shield className="h-4 w-4" />
+                        Quản trị
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleSignOut}

@@ -521,6 +521,7 @@ export type Database = {
           host_id: string
           id: string
           is_playing: boolean | null
+          is_public: boolean | null
           movie_name: string
           movie_slug: string
           playback_time: number | null
@@ -536,6 +537,7 @@ export type Database = {
           host_id: string
           id?: string
           is_playing?: boolean | null
+          is_public?: boolean | null
           movie_name: string
           movie_slug: string
           playback_time?: number | null
@@ -551,6 +553,7 @@ export type Database = {
           host_id?: string
           id?: string
           is_playing?: boolean | null
+          is_public?: boolean | null
           movie_name?: string
           movie_slug?: string
           playback_time?: number | null
@@ -565,6 +568,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_admin_by_email: {
+        Args: { target_email: string }
+        Returns: undefined
+      }
       check_rate_limit: {
         Args: {
           p_action_type: string

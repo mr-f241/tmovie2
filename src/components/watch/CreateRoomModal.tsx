@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 
 interface CreateRoomModalProps {
@@ -36,6 +37,7 @@ export const CreateRoomModal = ({
   const [roomCode, setRoomCode] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [mode, setMode] = useState<'create' | 'join'>('create');
+  const [isPublic, setIsPublic] = useState(true);
 
   const generateRoomCode = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -61,6 +63,7 @@ export const CreateRoomModal = ({
           episode_slug: episodeSlug,
           episode_name: episodeName,
           poster_url: posterUrl,
+          is_public: isPublic,
         })
         .select()
         .single();
@@ -176,6 +179,18 @@ export const CreateRoomModal = ({
                       <p className="text-sm text-muted-foreground">{episodeName}</p>
                     )}
                   </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="is-public" 
+                      checked={isPublic}
+                      onCheckedChange={(checked) => setIsPublic(checked === true)}
+                    />
+                    <Label htmlFor="is-public" className="text-sm cursor-pointer">
+                      Hiển thị công khai trong danh sách phòng
+                    </Label>
+                  </div>
+
                   <Button
                     className="w-full gap-2"
                     onClick={createRoom}

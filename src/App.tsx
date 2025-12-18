@@ -5,18 +5,26 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { securityClient } from '@/lib/security';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+
 import Index from "./pages/Index";
 import MovieList from "./pages/MovieList";
 import MovieDetail from "./pages/MovieDetail";
 import Watch from "./pages/Watch";
 import Search from "./pages/Search";
 import CategoryPage from "./pages/CategoryPage";
+import Auth from "./pages/Auth";
+import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
+import MyList from "./pages/MyList";
+import History from "./pages/History";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
       retry: 2,
       refetchOnWindowFocus: false,
     },
@@ -24,29 +32,37 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  // Initialize security client on app load
   useEffect(() => {
     securityClient.init().catch(console.error);
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/danh-sach/:type" element={<MovieList />} />
-            <Route path="/phim/:slug" element={<MovieDetail />} />
-            <Route path="/xem-phim/:slug" element={<Watch />} />
-            <Route path="/tim-kiem" element={<Search />} />
-            <Route path="/the-loai/:slug" element={<CategoryPage type="category" />} />
-            <Route path="/quoc-gia/:slug" element={<CategoryPage type="country" />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/danh-sach/:type" element={<MovieList />} />
+                <Route path="/phim/:slug" element={<MovieDetail />} />
+                <Route path="/xem-phim/:slug" element={<Watch />} />
+                <Route path="/tim-kiem" element={<Search />} />
+                <Route path="/the-loai/:slug" element={<CategoryPage type="category" />} />
+                <Route path="/quoc-gia/:slug" element={<CategoryPage type="country" />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/my-list" element={<MyList />} />
+                <Route path="/history" element={<History />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };

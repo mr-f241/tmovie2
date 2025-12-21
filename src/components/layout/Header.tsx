@@ -98,9 +98,33 @@ const countries = [
   { name: 'Đài Loan', slug: 'dai-loan', flag: '🇹🇼' },
 ];
 
+import { usePWA } from '@/hooks/usePWA';
+import { Download } from 'lucide-react';
+
+const InstallButtonMobile = () => {
+  const { isInstallable, promptInstall } = usePWA();
+
+  if (!isInstallable) return null;
+
+  return (
+    <div className="px-4 pb-4">
+      <Button
+        onClick={promptInstall}
+        className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white border-0 hover:opacity-90"
+      >
+        <Download className="mr-2 h-4 w-4" />
+        Cài đặt ứng dụng
+      </Button>
+    </div>
+  );
+};
+
 const languages = [
   { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
   { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'ja', name: '日本語', flag: '🇯🇵' },
+  { code: 'ko', name: '한국어', flag: '🇰🇷' },
+  { code: 'zh', name: '中文', flag: '🇨🇳' },
 ];
 
 export const Header = () => {
@@ -693,6 +717,9 @@ export const Header = () => {
                       {i18n.language === 'vi' ? 'EN' : 'VI'}
                     </Button>
                   </div>
+
+                  {/* PWA Install Button (Mobile) */}
+                  <InstallButtonMobile />
                 </div>
               </div>
             </motion.nav>

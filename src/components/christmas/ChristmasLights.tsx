@@ -10,8 +10,8 @@ export const ChristmasLights = () => {
     }));
 
     return (
-        <div className="fixed top-0 left-0 right-0 pointer-events-none z-40 h-16">
-            <div className="container mx-auto relative h-full">
+        <div className="fixed top-0 left-0 right-0 pointer-events-none z-40 h-16 overflow-hidden">
+            <div className="w-full relative h-full">
                 {/* Wire */}
                 <div className="absolute top-4 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 

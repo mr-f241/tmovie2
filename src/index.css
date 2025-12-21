@@ -197,10 +197,14 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased overflow-x-hidden;
     font-family: 'Inter', system-ui, sans-serif;
     transition: background-color var(--duration-slow) var(--ease-out),
       color var(--duration-slow) var(--ease-out);
+  }
+
+  #root {
+    @apply min-h-screen flex flex-col overflow-x-hidden;
   }
 
   h1,
@@ -472,6 +476,23 @@
 
   .aspect-square {
     aspect-ratio: 1/1;
+  }
+
+  /* Dynamic Accent Utilities */
+  .bg-movie-accent {
+    background-color: hsl(var(--movie-accent));
+  }
+
+  .text-movie-accent {
+    color: hsl(var(--movie-accent));
+  }
+
+  .border-movie-accent {
+    border-color: hsl(var(--movie-accent));
+  }
+
+  .shadow-movie-accent {
+    box-shadow: 0 0 20px hsl(var(--movie-accent) / 0.3);
   }
 }
 

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search as SearchIcon, ChevronLeft, ChevronRight, Film, Youtube } from 'lucide-react';
 import { searchMovies } from '@/services/api';
 import { searchYouTube } from '@/services/youtube';
+import { useSearchHistory } from '@/hooks/useSearchHistory';
 import { Layout } from '@/components/layout/Layout';
 import { MovieGrid } from '@/components/movie/MovieGrid';
 import { YouTubeGrid } from '@/components/search/YouTubeGrid';
@@ -17,6 +18,14 @@ const Search = () => {
   const keyword = searchParams.get('keyword') || '';
   const page = Number(searchParams.get('page')) || 1;
   const tab = (searchParams.get('tab') as 'movies' | 'youtube') || 'movies';
+  const { addToSearchHistory } = useSearchHistory();
+
+  // Save to history when keyword changes
+  useEffect(() => {
+    if (keyword) {
+      addToSearchHistory(keyword);
+    }
+  }, [keyword, addToSearchHistory]);
 
   // YouTube pagination state (pageToken based)
   const [youtubePageToken, setYoutubePageToken] = useState<string | undefined>(undefined);
@@ -97,11 +106,10 @@ const Search = () => {
             <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6 border-b border-border overflow-x-auto">
               <button
                 onClick={() => handleTabChange('movies')}
-                className={`flex items-center gap-1.5 sm:gap-2 pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                  tab === 'movies'
+                className={`flex items-center gap-1.5 sm:gap-2 pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === 'movies'
                     ? 'border-primary text-primary'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
+                  }`}
               >
                 <Film className="h-4 w-4" />
                 <span>Phim</span>
@@ -113,11 +121,10 @@ const Search = () => {
               </button>
               <button
                 onClick={() => handleTabChange('youtube')}
-                className={`flex items-center gap-1.5 sm:gap-2 pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                  tab === 'youtube'
+                className={`flex items-center gap-1.5 sm:gap-2 pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === 'youtube'
                     ? 'border-red-500 text-red-500'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
+                  }`}
               >
                 <Youtube className="h-4 w-4" />
                 <span>YouTube</span>

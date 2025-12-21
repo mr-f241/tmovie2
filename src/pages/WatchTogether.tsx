@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Send, Copy, LogOut, Play, Pause, Home,
-  MessageCircle, Crown, User, Share2
+  MessageCircle, Crown, User, Share2, X
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -94,16 +94,27 @@ const WatchTogether = () => {
     if (!room || !user || !profile) return;
 
     const joinRoom = async () => {
-      const { error } = await supabase.from('watch_room_participants').upsert({
+      // Check if already a participant
+      const { data: existing } = await supabase
+        .from('watch_room_participants')
+        .select('id')
+        .eq('room_id', room.id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (existing) return;
+
+      const { error } = await supabase.from('watch_room_participants').insert({
         room_id: room.id,
         user_id: user.id,
         display_name: profile.display_name || profile.username || 'Guest',
         avatar_url: profile.avatar_url,
         is_host: user.id === room.host_id,
-      }, { onConflict: 'room_id,user_id' });
-      
-      if (error && !error.message.includes('duplicate')) {
+      });
+
+      if (error) {
         console.error('Error joining room:', error);
+        toast.error('Không thể tham gia phòng: ' + error.message);
       }
     };
 
@@ -111,11 +122,14 @@ const WatchTogether = () => {
 
     // Leave on unmount
     return () => {
-      supabase
-        .from('watch_room_participants')
-        .delete()
-        .eq('room_id', room.id)
-        .eq('user_id', user.id);
+      const cleanup = async () => {
+        await supabase
+          .from('watch_room_participants')
+          .delete()
+          .eq('room_id', room.id)
+          .eq('user_id', user.id);
+      };
+      cleanup();
     };
   }, [room, user, profile]);
 
@@ -190,7 +204,7 @@ const WatchTogether = () => {
   // Sync video state (host only)
   const updateRoomState = async (isPlaying: boolean, time?: number) => {
     if (!isHost || !room) return;
-    
+
     await supabase
       .from('watch_rooms')
       .update({
@@ -339,85 +353,106 @@ const WatchTogether = () => {
         </div>
       </div>
 
+      {/* Chat Toggle Button (when closed) */}
+      {!isChatOpen && (
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="fixed right-4 top-1/2 -translate-y-1/2 z-50"
+        >
+          <Button
+            size="icon"
+            className="h-12 w-12 rounded-full shadow-lg"
+            onClick={() => setIsChatOpen(true)}
+          >
+            <MessageCircle className="h-5 w-5" />
+          </Button>
+        </motion.div>
+      )}
+
       {/* Chat Section */}
       <motion.div
         initial={{ width: isChatOpen ? 380 : 0 }}
         animate={{ width: isChatOpen ? 380 : 0 }}
         className="border-l border-border bg-secondary/20 flex flex-col overflow-hidden"
       >
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 text-primary" />
-            <span className="font-semibold">Chat</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsChatOpen(!isChatOpen)}
-          >
-            <MessageCircle className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Participants */}
-        <div className="p-3 border-b border-border">
-          <p className="text-xs text-muted-foreground mb-2">Người tham gia</p>
-          <div className="flex flex-wrap gap-2">
-            {participants.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center gap-1.5 px-2 py-1 bg-secondary/50 rounded-full text-xs"
+        {isChatOpen && (
+          <>
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-5 w-5 text-primary" />
+                <span className="font-semibold">Chat</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsChatOpen(false)}
               >
-                {p.is_host && <Crown className="h-3 w-3 text-yellow-500" />}
-                <span>{p.display_name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
 
-        {/* Messages */}
-        <ScrollArea className="flex-1 p-3">
-          <div className="space-y-3">
-            {messages.map((msg) => (
-              <div key={msg.id} className="flex gap-2">
-                <Avatar className="h-7 w-7">
-                  <AvatarImage src={msg.avatar_url || undefined} />
-                  <AvatarFallback className="text-xs">
-                    {msg.display_name[0].toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs">
-                    <span className="font-medium">{msg.display_name}</span>
-                    <span className="text-muted-foreground ml-2">
-                      {new Date(msg.created_at).toLocaleTimeString('vi-VN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                  </p>
-                  <p className="text-sm text-muted-foreground break-words">{msg.content}</p>
-                </div>
+            {/* Participants */}
+            <div className="p-3 border-b border-border">
+              <p className="text-xs text-muted-foreground mb-2">Người tham gia</p>
+              <div className="flex flex-wrap gap-2">
+                {participants.map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center gap-1.5 px-2 py-1 bg-secondary/50 rounded-full text-xs"
+                  >
+                    {p.is_host && <Crown className="h-3 w-3 text-yellow-500" />}
+                    <span>{p.display_name}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
+            </div>
 
-        {/* Message Input */}
-        <form onSubmit={sendMessage} className="p-3 border-t border-border">
-          <div className="flex gap-2">
-            <Input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Nhập tin nhắn..."
-              className="flex-1 bg-secondary/30"
-            />
-            <Button type="submit" size="icon" disabled={!message.trim()}>
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-        </form>
+            {/* Messages */}
+            <ScrollArea className="flex-1 p-3">
+              <div className="space-y-3">
+                {messages.map((msg) => (
+                  <div key={msg.id} className="flex gap-2">
+                    <Avatar className="h-7 w-7">
+                      <AvatarImage src={msg.avatar_url || undefined} />
+                      <AvatarFallback className="text-xs">
+                        {msg.display_name[0].toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs">
+                        <span className="font-medium">{msg.display_name}</span>
+                        <span className="text-muted-foreground ml-2">
+                          {new Date(msg.created_at).toLocaleTimeString('vi-VN', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </p>
+                      <p className="text-sm text-muted-foreground break-words">{msg.content}</p>
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+
+            {/* Message Input */}
+            <form onSubmit={sendMessage} className="p-3 border-t border-border">
+              <div className="flex gap-2">
+                <Input
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Nhập tin nhắn..."
+                  className="flex-1 bg-secondary/30"
+                />
+                <Button type="submit" size="icon" disabled={!message.trim()}>
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </form>
+          </>
+        )}
       </motion.div>
     </div>
   );

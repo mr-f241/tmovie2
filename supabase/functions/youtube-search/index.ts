@@ -73,9 +73,9 @@ serve(async (req) => {
     }
 
     // Search for movie trailers/full movies
-    const searchQuery = `${keyword} phim vietsub full`;
-    let youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(searchQuery)}&type=video&maxResults=${maxResults}&key=${apiKey}&relevanceLanguage=vi&videoDuration=long`;
-    
+    const searchQuery = keyword;
+    let youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(searchQuery)}&type=video&maxResults=${maxResults}&key=${apiKey}&relevanceLanguage=vi`;
+
     // Add pageToken if provided
     if (pageToken) {
       youtubeUrl += `&pageToken=${encodeURIComponent(pageToken)}`;
@@ -88,7 +88,7 @@ serve(async (req) => {
         'Referer': 'https://lovable.dev',
       }
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`YouTube API error: ${response.status} - ${errorText}`);
@@ -99,7 +99,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    
+
     const items = data.items?.map((item: any) => ({
       videoId: item.id?.videoId,
       title: item.snippet?.title,
@@ -119,7 +119,7 @@ serve(async (req) => {
 
     // Cache the results
     cache.set(cacheKey, { data: result, timestamp: Date.now() });
-    
+
     // Clean old cache entries
     const now = Date.now();
     for (const [key, value] of cache.entries()) {

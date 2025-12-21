@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  ChevronLeft, ChevronRight, Home, List, Server, AlertCircle, 
+import {
+  ChevronLeft, ChevronRight, Home, List, Server, AlertCircle,
   Loader2, Heart, Share2, Shield, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { getDominantColor, hexToHSL } from '@/lib/color';
 
 const Watch = () => {
   const { slug } = useParams();
@@ -25,8 +26,8 @@ const Watch = () => {
   const [currentServer, setCurrentServer] = useState(0);
   const [showRoomModal, setShowRoomModal] = useState(false);
   const playerRef = useRef<HTMLDivElement>(null);
-  
-  const { addToHistory, updateProgress } = useWatchHistory();
+
+  const { addToHistory, updateProgress, getResumeInfo } = useWatchHistory();
   const { isFavorite, toggleFavorite } = useFavorites();
 
   // Apply security protections
@@ -46,7 +47,7 @@ const Watch = () => {
   });
 
   const episodeSlug = searchParams.get('tap');
-  
+
   const currentEpisodeData = movie?.episodes?.[currentServer]?.server_data;
   const currentEpisodeIndex = currentEpisodeData?.findIndex((ep) => ep.slug === episodeSlug) ?? 0;
   const currentEpisode = currentEpisodeData?.[currentEpisodeIndex >= 0 ? currentEpisodeIndex : 0];
@@ -54,19 +55,47 @@ const Watch = () => {
   const prevEpisode = currentEpisodeData?.[currentEpisodeIndex - 1];
   const nextEpisode = currentEpisodeData?.[currentEpisodeIndex + 1];
 
+  // Dynamic Theme logic
+  useEffect(() => {
+    if (movie?.poster_url) {
+      const posterUrl = getImageUrl(movie.poster_url);
+      getDominantColor(posterUrl).then(hex => {
+        const hsl = hexToHSL(hex);
+        // Ensure the color isn't too dark or too light for UI
+        const s = Math.max(40, Math.min(80, hsl.s));
+        const l = Math.max(40, Math.min(60, hsl.l));
+
+        document.documentElement.style.setProperty('--movie-accent', `${hsl.h} ${s}% ${l}%`);
+        document.documentElement.style.setProperty('--movie-accent-foreground', `0 0% 100%`);
+      });
+    }
+    return () => {
+      document.documentElement.style.removeProperty('--movie-accent');
+      document.documentElement.style.removeProperty('--movie-accent-foreground');
+    };
+  }, [movie?.poster_url]);
+
+  const lastAddedRef = useRef<string | null>(null);
+
   // Save to history when episode loads
   useEffect(() => {
     if (movie && currentEpisode) {
+      const episodeKey = `${movie.slug}-${currentEpisode.slug}`;
+      if (lastAddedRef.current === episodeKey) return;
+
+      const resumeInfo = getResumeInfo(movie.slug);
       addToHistory({
         slug: movie.slug,
         name: movie.name,
         posterUrl: getImageUrl(movie.poster_url),
         episodeSlug: currentEpisode.slug,
         episodeName: currentEpisode.name,
-        progress: 0,
+        progress: (resumeInfo?.episodeSlug === currentEpisode.slug) ? resumeInfo.progress : 0,
       });
+
+      lastAddedRef.current = episodeKey;
     }
-  }, [movie, currentEpisode, addToHistory]);
+  }, [movie?.slug, currentEpisode?.slug, addToHistory]);
 
   const handleProgress = (progress: number, currentTime: number) => {
     if (movie && currentEpisode) {
@@ -128,6 +157,7 @@ const Watch = () => {
   }
 
   const isMovieFavorite = isFavorite(movie.slug);
+  const resumeInfo = getResumeInfo(movie.slug);
 
   return (
     <div className="min-h-screen bg-background">
@@ -141,6 +171,7 @@ const Watch = () => {
             episodeName={currentEpisode.name}
             onProgress={handleProgress}
             onEnded={handleEnded}
+            initialProgress={resumeInfo?.episodeSlug === currentEpisode.slug ? resumeInfo.progress : 0}
           />
         </div>
       </div>
@@ -167,11 +198,11 @@ const Watch = () => {
                   Chi tiết
                 </Link>
               </Button>
-              <Button 
-                variant={isMovieFavorite ? 'default' : 'secondary'} 
+              <Button
+                variant={isMovieFavorite ? 'default' : 'secondary'}
                 size="sm"
                 onClick={handleFavorite}
-                className={isMovieFavorite ? 'bg-pink-600 hover:bg-pink-700' : ''}
+                className={isMovieFavorite ? 'bg-movie-accent hover:opacity-90 shadow-movie-accent border-0' : ''}
               >
                 <Heart className={`h-4 w-4 mr-1.5 ${isMovieFavorite ? 'fill-current' : ''}`} />
                 {isMovieFavorite ? 'Đã thích' : 'Thích'}
@@ -201,7 +232,7 @@ const Watch = () => {
               {nextEpisode && (
                 <Button
                   size="sm"
-                  className="gradient-primary border-0"
+                  className="bg-movie-accent hover:opacity-90 shadow-movie-accent border-0 text-white"
                   onClick={() => setSearchParams({ tap: nextEpisode.slug })}
                 >
                   Tập tiếp
@@ -216,13 +247,13 @@ const Watch = () => {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="font-display text-2xl md:text-3xl font-bold">{movie.name}</h1>
-                <Shield className="h-5 w-5 text-green-500" />
+                <Shield className="h-5 w-5 text-success" />
               </div>
               <p className="text-muted-foreground">
-                {movie.origin_name} • <span className="text-primary">{currentEpisode.name}</span>
+                {movie.origin_name} • <span className="text-movie-accent font-medium">{currentEpisode.name}</span>
               </p>
             </div>
-            
+
             {/* Server Selection */}
             {movie.episodes && movie.episodes.length > 1 && (
               <div className="flex items-center gap-3">

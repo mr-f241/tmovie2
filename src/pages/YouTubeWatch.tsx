@@ -1,15 +1,36 @@
+import { useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Youtube, ExternalLink, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
+import { useWatchHistory } from '@/hooks/useWatchHistory';
 import { toast } from 'sonner';
 
 const YouTubeWatch = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  
+  const { addToHistory } = useWatchHistory();
+  const lastAddedRef = useRef<string | null>(null);
+
   const videoId = searchParams.get('v');
   const title = searchParams.get('title') || 'Video YouTube';
+
+  useEffect(() => {
+    if (videoId && title) {
+      if (lastAddedRef.current === videoId) return;
+
+      addToHistory({
+        slug: `yt-${videoId}`,
+        name: title,
+        posterUrl: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+        episodeSlug: videoId,
+        episodeName: 'YouTube Video',
+        progress: 0,
+      });
+
+      lastAddedRef.current = videoId;
+    }
+  }, [videoId, title, addToHistory]);
 
   if (!videoId) {
     return (
@@ -70,7 +91,7 @@ const YouTubeWatch = () => {
               <ArrowLeft className="h-4 w-4" />
               <span className="hidden sm:inline">Quay lại</span>
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -94,7 +115,7 @@ const YouTubeWatch = () => {
 
           {/* Title */}
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 line-clamp-2">
-            {decodeURIComponent(title)}
+            {title}
           </h1>
 
           {/* YouTube Badge */}

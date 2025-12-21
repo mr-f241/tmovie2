@@ -35,21 +35,33 @@ export const useWatchHistory = () => {
   }, [history, isLoaded]);
 
   const addToHistory = useCallback((item: Omit<WatchHistoryItem, 'timestamp'>) => {
+    if (!isLoaded) return;
+
     setHistory((prev) => {
-      // Remove existing entry for same movie
+      // Find existing entry for same movie
+      const existing = prev.find((h) => h.slug === item.slug);
+
+      // Remove existing entry
       const filtered = prev.filter((h) => h.slug !== item.slug);
-      
+
+      // If new item has 0 progress but we have existing progress, preserve it
+      const progress = (item.progress === 0 && existing) ? existing.progress : item.progress;
+      const duration = (item.duration === undefined && existing) ? existing.duration : item.duration;
+      const episodeSlug = (item.episodeSlug === existing?.episodeSlug) ? item.episodeSlug : item.episodeSlug;
+
       // Add new entry at the beginning
       const newHistory = [
-        { ...item, timestamp: Date.now() },
+        { ...item, progress, duration, timestamp: Date.now() },
         ...filtered,
       ].slice(0, MAX_HISTORY_ITEMS);
-      
+
       return newHistory;
     });
-  }, []);
+  }, [isLoaded]);
 
   const updateProgress = useCallback((slug: string, episodeSlug: string, progress: number, duration?: number) => {
+    if (!isLoaded) return;
+
     setHistory((prev) => {
       return prev.map((item) => {
         if (item.slug === slug) {
@@ -64,7 +76,7 @@ export const useWatchHistory = () => {
         return item;
       });
     });
-  }, []);
+  }, [isLoaded]);
 
   const removeFromHistory = useCallback((slug: string) => {
     setHistory((prev) => prev.filter((h) => h.slug !== slug));

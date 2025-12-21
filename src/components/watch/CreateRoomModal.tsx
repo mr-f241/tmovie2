@@ -72,14 +72,14 @@ export const CreateRoomModal = ({
 
       setRoomCode(code);
       toast.success('Đã tạo phòng thành công!');
-      
+
       // Navigate to the room
       setTimeout(() => {
         navigate(`/xem-chung/${code}`);
       }, 1500);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating room:', error);
-      toast.error('Không thể tạo phòng');
+      toast.error(`Không thể tạo phòng: ${error.message || 'Lỗi không xác định'}`);
     } finally {
       setIsCreating(false);
     }
@@ -179,10 +179,10 @@ export const CreateRoomModal = ({
                       <p className="text-sm text-muted-foreground">{episodeName}</p>
                     )}
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="is-public" 
+                    <Checkbox
+                      id="is-public"
                       checked={isPublic}
                       onCheckedChange={(checked) => setIsPublic(checked === true)}
                     />

@@ -1,0 +1,14 @@
+/* Christmas Snow Animation */
+@keyframes snow-fall {
+    0% {
+        transform: translateY(-10vh) translateX(0);
+    }
+
+    100% {
+        transform: translateY(110vh) translateX(100px);
+    }
+}
+
+.animate-snow-fall {
+    animation: snow-fall linear infinite;
+}

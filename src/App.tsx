@@ -9,6 +9,10 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useAuthModal } from '@/hooks/useAuthModal';
+import { InstallPrompt } from '@/components/pwa/InstallPrompt';
+import { ChristmasSnow } from '@/components/christmas/ChristmasSnow';
+import { ChristmasLights } from '@/components/christmas/ChristmasLights';
+import { ChristmasBanner } from '@/components/christmas/ChristmasBanner';
 
 import Index from "./pages/Index";
 import MovieList from "./pages/MovieList";
@@ -76,6 +80,10 @@ const App = () => {
                 <Route path="/youtube/watch" element={<YouTubeWatch />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <InstallPrompt />
+              <ChristmasSnow />
+              <ChristmasLights />
+              <ChristmasBanner />
             </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>

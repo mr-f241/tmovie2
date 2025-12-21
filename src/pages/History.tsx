@@ -17,39 +17,34 @@ const History: React.FC = () => {
   const { user, isLoading } = useAuth();
   const { openLogin } = useAuthModal();
 
-  useEffect(() => {
-    if (!isLoading && !user) {
-      openLogin();
-    }
-  }, [user, isLoading, openLogin]);
-
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return 'Hôm nay';
     if (diffDays === 1) return 'Hôm qua';
     if (diffDays < 7) return `${diffDays} ngày trước`;
     return date.toLocaleDateString('vi-VN');
   };
 
-  if (!user) {
-    return (
-      <Layout>
-        <div className="container py-8 flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <User className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-sm sm:text-base text-muted-foreground">Vui lòng đăng nhập để xem lịch sử</p>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
   return (
     <Layout>
       <div className="container py-6 sm:py-8 px-4">
+        {!user && (
+          <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <User className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Bạn đang xem với tư cách khách</p>
+                <p className="text-xs text-muted-foreground">Đăng nhập để đồng bộ lịch sử trên nhiều thiết bị.</p>
+              </div>
+            </div>
+            <Button size="sm" onClick={openLogin}>Đăng nhập ngay</Button>
+          </div>
+        )}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -69,9 +64,9 @@ const History: React.FC = () => {
               </div>
             </div>
             {history.length > 0 && (
-              <Button 
-                variant="outline" 
-                onClick={clearHistory} 
+              <Button
+                variant="outline"
+                onClick={clearHistory}
                 className="gap-2 w-full sm:w-auto"
                 size="sm"
               >
@@ -110,7 +105,7 @@ const History: React.FC = () => {
                 >
                   <div className="flex gap-3 sm:gap-4 p-3 sm:p-4">
                     {/* Poster */}
-                    <Link 
+                    <Link
                       to={`/xem-phim/${item.slug}?tap=${item.episodeSlug}`}
                       className="relative w-20 sm:w-28 md:w-32 aspect-video rounded-lg overflow-hidden shrink-0"
                     >

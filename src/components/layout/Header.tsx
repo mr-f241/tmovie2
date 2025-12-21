@@ -33,6 +33,7 @@ import {
   Music,
   Shirt,
   Shield,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/Logo';
@@ -62,7 +63,9 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
+  NavigationMenuViewport,
 } from '@/components/ui/navigation-menu';
+import { toast } from 'sonner';
 
 const navLinks = [
   { name: 'nav.series', path: '/danh-sach/phim-bo', icon: Tv },
@@ -147,14 +150,28 @@ export const Header = () => {
     i18n.changeLanguage(code);
   };
 
+  const handleSurpriseMe = async () => {
+    try {
+      // Fetch latest movies to get some slugs
+      const response = await fetch('https://phimapi.com/danh-sach/phim-moi-cap-nhat?page=1').then(res => res.json());
+      if (response.items && response.items.length > 0) {
+        const randomIndex = Math.floor(Math.random() * response.items.length);
+        const randomMovie = response.items[randomIndex];
+        toast.success('Đang chọn phim ngẫu nhiên cho bạn...');
+        navigate(`/phim/${randomMovie.slug}`);
+      }
+    } catch (error) {
+      toast.error('Không thể chọn phim ngẫu nhiên lúc này.');
+    }
+  };
+
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled
-            ? 'glass py-3 shadow-lg'
-            : 'bg-gradient-to-b from-background/90 via-background/50 to-transparent py-4'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
+          ? 'glass py-3 shadow-lg'
+          : 'bg-gradient-to-b from-background/90 via-background/50 to-transparent py-4'
+          }`}
       >
         <div className="container flex items-center justify-between">
           {/* Logo */}
@@ -221,11 +238,10 @@ export const Header = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
-                    isActive
-                      ? 'text-primary'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
+                  className={`relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${isActive
+                    ? 'text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                    }`}
                 >
                   <span className="relative z-10 flex items-center gap-2">
                     <link.icon className="h-4 w-4" />
@@ -245,11 +261,10 @@ export const Header = () => {
             {/* Watch Together */}
             <Link
               to="/xem-chung"
-              className={`relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
-                location.pathname === '/xem-chung'
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+              className={`relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${location.pathname === '/xem-chung'
+                ? 'text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
             >
               <span className="relative z-10 flex items-center gap-2">
                 <Users className="h-4 w-4" />
@@ -260,15 +275,27 @@ export const Header = () => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">
+            {/* Surprise Me */}
+            <motion.div whileTap={{ scale: 0.95 }} className="hidden sm:block">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSurpriseMe}
+                className="text-muted-foreground hover:text-primary transition-colors"
+                title="Phim ngẫu nhiên"
+              >
+                <Sparkles className="h-5 w-5" />
+              </Button>
+            </motion.div>
+
             {/* Search Toggle */}
             <motion.div whileTap={{ scale: 0.95 }}>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowSearch(!showSearch)}
-                className={`text-muted-foreground hover:text-foreground transition-colors ${
-                  showSearch ? 'text-primary' : ''
-                }`}
+                className={`text-muted-foreground hover:text-foreground transition-colors ${showSearch ? 'text-primary' : ''
+                  }`}
               >
                 <Search className="h-5 w-5" />
               </Button>
@@ -473,6 +500,15 @@ export const Header = () => {
               className="lg:hidden glass mt-3 mx-4 rounded-xl p-4 shadow-xl max-h-[80vh] overflow-y-auto"
             >
               <div className="flex flex-col gap-1">
+                {/* Surprise Me Mobile */}
+                <button
+                  onClick={handleSurpriseMe}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-all mb-2"
+                >
+                  <Sparkles className="h-5 w-5" />
+                  Phim ngẫu nhiên (Surprise Me)
+                </button>
+
                 {/* Genres Accordion */}
                 <div>
                   <button
@@ -554,11 +590,10 @@ export const Header = () => {
                     <Link
                       key={link.path}
                       to={link.path}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
-                        isActive
-                          ? 'text-primary bg-primary/10'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                      }`}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive
+                        ? 'text-primary bg-primary/10'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                        }`}
                     >
                       <link.icon className="h-5 w-5" />
                       {t(link.name)}
@@ -569,11 +604,10 @@ export const Header = () => {
                 {/* Watch Together */}
                 <Link
                   to="/xem-chung"
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
-                    location.pathname === '/xem-chung'
-                      ? 'text-primary bg-primary/10'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                  }`}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${location.pathname === '/xem-chung'
+                    ? 'text-primary bg-primary/10'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                    }`}
                 >
                   <Users className="h-5 w-5" />
                   Xem chung

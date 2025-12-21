@@ -86,8 +86,9 @@ const WatchTogetherLobby = () => {
       }
 
       navigate(`/xem-chung/${joinCode.trim().toUpperCase()}`);
-    } catch (error) {
-      toast.error('Không thể tham gia phòng');
+    } catch (error: any) {
+      console.error('Error joining room:', error);
+      toast.error(`Không thể tham gia phòng: ${error.message || 'Lỗi không xác định'}`);
     } finally {
       setIsJoining(false);
     }
@@ -226,8 +227,8 @@ const WatchTogetherLobby = () => {
           ) : displayRooms && displayRooms.length > 0 ? (
             <div className="grid gap-3">
               {displayRooms.map((room: any) => (
-                <Card 
-                  key={room.id} 
+                <Card
+                  key={room.id}
                   className="glass-card hover:border-primary/50 transition-colors cursor-pointer group"
                   onClick={() => handleJoinDirectly(room.room_code)}
                 >
@@ -236,8 +237,8 @@ const WatchTogetherLobby = () => {
                       {/* Poster */}
                       <div className="w-16 h-20 sm:w-20 sm:h-28 rounded-md overflow-hidden bg-secondary/50 shrink-0">
                         {room.poster_url ? (
-                          <img 
-                            src={room.poster_url} 
+                          <img
+                            src={room.poster_url}
                             alt={room.movie_name}
                             className="w-full h-full object-cover"
                           />
@@ -258,7 +259,7 @@ const WatchTogetherLobby = () => {
                             {room.room_code}
                           </code>
                         </div>
-                        
+
                         {room.episode_name && (
                           <p className="text-xs sm:text-sm text-muted-foreground truncate mb-2">
                             {room.episode_name}
@@ -272,9 +273,9 @@ const WatchTogetherLobby = () => {
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {formatDistanceToNow(new Date(room.created_at), { 
-                              addSuffix: true, 
-                              locale: vi 
+                            {formatDistanceToNow(new Date(room.created_at), {
+                              addSuffix: true,
+                              locale: vi
                             })}
                           </span>
                           {room.is_playing && (
@@ -286,8 +287,8 @@ const WatchTogetherLobby = () => {
                       </div>
 
                       {/* Join Button */}
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex"
                       >
                         Tham gia

@@ -10,6 +10,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { InstallPrompt } from '@/components/pwa/InstallPrompt';
+import { MovieChatbot } from '@/components/ai/MovieChatbot';
 
 import Index from "./pages/Index";
 import MovieList from "./pages/MovieList";
@@ -78,6 +79,7 @@ const App = () => {
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <InstallPrompt />
+              <MovieChatbot />
             </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>
